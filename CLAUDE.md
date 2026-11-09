@@ -20,7 +20,8 @@ Les `docs/governance/constitution.md` før du endrer noe. Den går foran alt ann
 - Alt brukerrettet innhold er på **norsk bokmål**, vennlig og saklig. Data er merket eksempeldata, og priser er merket eksempelpris.
 
 ## Teknikk
-- Vite + React + TypeScript + Tailwind, `HashRouter` (GitHub Pages). Ingen backend. Tilstand i minnet og localStorage.
+- Vite + React + TypeScript + Tailwind, `HashRouter` (GitHub Pages).
+- Backend: Supabase (`src/logic/backend.ts`, skjema i `supabase/migrations/`) for **anonym testlogg og regler**. Uten `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY` brukes localStorage. Aldri regnr eller personopplysninger i backend (G8, G10). Aldri service_role-nøkkel i frontend.
 - Tester: Vitest (`src/logic/*.test.ts`). Skjermbilder og akseptsjekker: Playwright + axe (`scripts/screenshots.mjs`, krever `npx vite preview --port 4173`).
 - Deploy: GitHub Actions → GitHub Pages.
 
@@ -29,6 +30,7 @@ Les `docs/governance/constitution.md` før du endrer noe. Den går foran alt ann
 npm install
 npm run dev        # utviklingsserver
 npm test           # Vitest én gang
+npm run test:backend # e2e mot falsk Supabase (krever preview på 4174, se scripts/backend-test.mjs)
 npm run build      # typesjekk + produksjonsbygg
 npm run screenshots
 ```

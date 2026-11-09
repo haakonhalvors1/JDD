@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { anbefal } from '../logic/anbefal'
 import { produkter, standardRegeldata, standardsvar } from '../logic/data'
-import { logg, sikreOkt } from '../logic/logg'
+import { logg, startOkt } from '../logic/logg'
+import { harBackend, hentRegler, lagreReglerFelles } from '../logic/backend'
 import type { Bil, LedSvar, Regel, Regeldata, Resultat, Svar } from '../logic/typer'
 
 // ---------- Testinnstillinger fra URL (?test=1&variant=b&oppgave=2) ----------
@@ -96,9 +97,14 @@ export interface Garasje {
   ar: number
 }
 
+export type ReglerStatus = 'lokal' | 'laster' | 'felles' | 'feil'
+
 interface Ctx extends Tilstand {
   innst: Innstillinger
   regeldata: Regeldata
+  /** Hvor reglene kommer fra: lokal (localStorage) eller felles (backend) */
+  reglerStatus: ReglerStatus
+  hentReglerPaNytt: () => void
   resultat: Resultat
   garasje: Garasje | null
   fagpersonApen: boolean
@@ -126,11 +132,27 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   // Økten opprettes før barna logger (f.eks. «landing»)
   const [innst] = useState(() => {
     const i = lesInnstillinger()
-    sikreOkt(i)
+    startOkt(i)
     return i
   })
   const [t, setT] = useState<Tilstand>(lesTilstand)
-  const [regeldata, setRegeldata] = useState<Regeldata>(lesRegeldata)
+  // Med backend: start fra eksempeldata (ikke lokale endringer) til felles regler er hentet
+  const [regeldata, setRegeldata] = useState<Regeldata>(() => (harBackend ? standardRegeldata : lesRegeldata()))
+  const [reglerStatus, setReglerStatus] = useState<ReglerStatus>(harBackend ? 'laster' : 'lokal')
+
+  const hentReglerPaNytt = useCallback(() => {
+    if (!harBackend) return
+    hentRegler()
+      .then((r) => {
+        if (r && r.length) setRegeldata((d) => ({ ...d, regler: r }))
+        setReglerStatus('felles')
+      })
+      .catch((e) => {
+        console.warn('Kunne ikke hente felles regler, bruker eksempeldata:', e)
+        setReglerStatus('feil')
+      })
+  }, [])
+  useEffect(() => hentReglerPaNytt(), [hentReglerPaNytt])
   const [fagpersonApen, setFagpersonApen] = useState(false)
   const [garasje, setGarasje] = useState<Garasje | null>(() => {
     try {
@@ -219,6 +241,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const lagreRegler = useCallback((regler: Regel[]) => {
     setRegeldata((r) => ({ ...r, regler }))
+    if (harBackend) {
+      lagreReglerFelles(regler)
+        .then(() => setReglerStatus('felles'))
+        .catch((e) => {
+          console.warn('Kunne ikke lagre regler felles:', e)
+          setReglerStatus('feil')
+        })
+      return
+    }
     try {
       localStorage.setItem(REGLER_NOKKEL, JSON.stringify(regler))
     } catch {
@@ -227,13 +258,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const tilbakestillRegler = useCallback(() => {
+    if (harBackend) {
+      lagreRegler(standardRegeldata.regler)
+      return
+    }
     setRegeldata(standardRegeldata)
     try {
       localStorage.removeItem(REGLER_NOKKEL)
     } catch {
       /* ignorer */
     }
-  }, [])
+  }, [lagreRegler])
 
   // K1/G8: bare ved eksplisitt samtykke
   const lagreIGarasje = useCallback(() => {
@@ -267,6 +302,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     ...t,
     innst,
     regeldata,
+    reglerStatus,
+    hentReglerPaNytt,
     resultat,
     garasje,
     fagpersonApen,

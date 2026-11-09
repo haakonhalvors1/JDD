@@ -1,6 +1,6 @@
 # Sjekkliste: K1–K9 og akseptansekriterier
 
-Verifisert 9.11.2026 mot `specs/001-passer-min-bil/spec.md`.
+Verifisert 9.11.2026 (backend lagt til samme dag) mot `specs/001-passer-min-bil/spec.md`.
 Slik ble det verifisert:
 - **Auto (V)**: Vitest, `npm test`, 28 tester.
 - **Auto (P)**: Playwright-skriptet `scripts/screenshots.mjs`, som ga 62/62 sjekker OK på mobil og desktop.
@@ -72,7 +72,12 @@ Slik ble det verifisert:
 | NF2 WCAG 2.1 AA | ◐ | axe: 0 alvorlige/kritiske avvik på 26 skjermer × 2 visninger, og regnr → bekreft bil fungerer med tastatur. **Ikke testet med skjermleser (NVDA/VoiceOver) eller av en person med tastatur gjennom hele flyten.** |
 | NF5 Merknad om regler for ekstralys + referansetall per sett | ✔ | Skjerm 08 |
 | NF6 Prototype-stripe på hver side, «eksempelpris» | ✔ | Alle skjermbilder |
-| NF7 Ingen nettverkskall etter lasting | ✔ | Manuell (0 eksterne kall), ingen `fetch` i koden |
+| NF7 Ingen LLM. Nettverk bare mot Supabase, uten personopplysninger | ✔ | `scripts/backend-test.mjs` (ingen regnr i backend). Uten konfigurasjon: 0 eksterne kall |
+| NF8.1 Felles testlogg på tvers av enheter | ✔ | `npm run test:backend` (mot falsk Supabase) |
+| NF8.2 Godkjent regel deles på tvers av enheter | ✔ | `npm run test:backend` |
+| NF8.3 Sendekø for hendelser som ikke ble sendt | ✔ | `npm run test:backend` (hendelse før sideomlasting) |
+| NF8.4 Ingen tomme økter fra interne sider | ✔ | `npm run test:backend` |
+| Backend mot **ekte** Supabase-prosjekt | ✘ | Venter på prosjekt og nøkler. Migrasjonen er testet i lokal Postgres 16 (RLS som anon-rollen). |
 | Testmodus: oppgavestripe, Ferdig/Gi opp | ✔ | Auto (P), Manuell (Gi opp) |
 | Variant a/b | ✔ | Auto (P) |
 | Logging av alle funnel-hendelser med tidsstempel | ✔ | Auto (P), Auto (V) |

@@ -1,4 +1,6 @@
-// Testlogg i localStorage. Anonym (T1, T2 …), ingen navn eller e-post (G8).
+// Testlogg: lokalt i localStorage og, når backend er satt opp, også i Supabase (felles for alle enheter).
+// Anonym (T1, T2 …), ingen navn eller e-post (G8).
+import { harBackend, registrerOkt, sendAvslutning, sendHendelse, sendTilbakemelding } from './backend'
 
 export type Hendelse =
   | 'landing'
@@ -34,6 +36,8 @@ export interface LoggHendelse {
   navn: Hendelse
   tid: string
   detalj?: string
+  /** Satt når hendelsen er bekreftet lagret i backend (sendekø) */
+  sendt?: boolean
 }
 
 export interface Tilbakemelding {
@@ -45,6 +49,9 @@ export interface Tilbakemelding {
 }
 
 export interface Okt {
+  /** Teknisk ID (UUID) – nøkkel lokalt og i backend */
+  uuid: string
+  /** Testperson-ID som vises: T1, T2 … (tildeles av backend når den finnes) */
   id: string
   start: string
   test: boolean
@@ -60,7 +67,8 @@ const OKT_NOKKEL = 'pmb.okt'
 
 function les(): Okt[] {
   try {
-    return JSON.parse(localStorage.getItem(NOKKEL) ?? '[]') as Okt[]
+    const okter = JSON.parse(localStorage.getItem(NOKKEL) ?? '[]') as Okt[]
+    return okter.map((o) => ({ ...o, uuid: o.uuid ?? o.id }))
   } catch {
     return []
   }
@@ -88,6 +96,7 @@ export function nesteId(okter: Okt[]): string {
   return `T${maks + 1}`
 }
 
+/** UUID for økten i denne fanen */
 export function aktivOktId(): string | null {
   try {
     return sessionStorage.getItem(OKT_NOKKEL)
@@ -96,19 +105,82 @@ export function aktivOktId(): string | null {
   }
 }
 
+/** Testperson-ID (T1 …) for økten i denne fanen */
+export function aktivTestperson(): string | null {
+  const id = aktivOktId()
+  return les().find((o) => o.uuid === id)?.id ?? null
+}
+
+// ---------- Synk mot backend ----------
+// Alle kall går i kø, slik at økten er registrert før hendelsene sendes.
+let ko: Promise<unknown> = Promise.resolve()
+let antallFeil = 0
+export const synkFeil = () => antallFeil
+export const OKT_ENDRET = 'pmb-okt-endret'
+
+function synk(fn: (uuid: string) => Promise<unknown>) {
+  const uuid = aktivOktId()
+  if (!harBackend || !uuid) return
+  ko = ko
+    .then(() => fn(uuid))
+    .catch((e) => {
+      antallFeil++
+      console.warn('Kunne ikke sende til felles logg (lagret lokalt):', e)
+    })
+}
+export const ventPaSynk = () => ko
+
+function registrer(o: Okt) {
+  synk(async (uuid) => {
+    const label = await registrerOkt(uuid, o)
+    if (label && label !== o.id) {
+      skriv(les().map((x) => (x.uuid === uuid ? { ...x, id: label } : x)))
+      window.dispatchEvent(new Event(OKT_ENDRET))
+    }
+  })
+  // Sendekø: hendelser som ikke ble bekreftet sendt (f.eks. siden ble lukket), sendes på nytt
+  for (const h of o.hendelser.filter((x) => !x.sendt)) sendOgMerk(h)
+}
+
+function sendOgMerk(h: LoggHendelse) {
+  synk(async (uuid) => {
+    const { sendt: _ignorert, ...rad } = h
+    void _ignorert
+    await sendHendelse(uuid, rad)
+    oppdater((o) => ({ ...o, hendelser: o.hendelser.map((x) => (x.tid === h.tid && x.navn === h.navn ? { ...x, sendt: true } : x)) }))
+  })
+}
+
+// Innstillingene for økter som opprettes ved første hendelse
+let innstForNyOkt: { test: boolean; oppgave: 1 | 2 | null; variant: 'a' | 'b' } = { test: false, oppgave: null, variant: 'a' }
+
+/**
+ * Ved oppstart: i testmodus opprettes økten med en gang (testlinjen viser T-nummeret).
+ * Ellers opprettes den først ved første hendelse, slik at besøk på interne sider ikke gir tomme økter.
+ */
+export function startOkt(innst: typeof innstForNyOkt) {
+  innstForNyOkt = innst
+  if (innst.test || aktivOktId()) sikreOkt(innst)
+}
+
 /** Henter eller oppretter økten for denne fanen. */
 export function sikreOkt(innst: { test: boolean; oppgave: 1 | 2 | null; variant: 'a' | 'b' }): Okt {
   const okter = les()
   const id = aktivOktId()
-  const finnes = id ? okter.find((o) => o.id === id) : undefined
-  if (finnes) return finnes
-  const ny: Okt = { id: nesteId(okter), start: new Date().toISOString(), hendelser: [], ...innst }
+  const finnes = id ? okter.find((o) => o.uuid === id) : undefined
+  if (finnes) {
+    registrer(finnes) // idempotent: sikrer at økten finnes i backend etter omlasting
+    return finnes
+  }
+  const uuid = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
+  const ny: Okt = { uuid, id: nesteId(okter), start: new Date().toISOString(), hendelser: [], ...innst }
   skriv([...okter, ny])
   try {
-    sessionStorage.setItem(OKT_NOKKEL, ny.id)
+    sessionStorage.setItem(OKT_NOKKEL, uuid)
   } catch {
     /* ignorer */
   }
+  registrer(ny)
   return ny
 }
 
@@ -123,27 +195,32 @@ export function nyOkt() {
 function oppdater(fn: (o: Okt) => Okt) {
   const id = aktivOktId()
   if (!id) return
-  skriv(les().map((o) => (o.id === id ? fn(o) : o)))
+  skriv(les().map((o) => (o.uuid === id ? fn(o) : o)))
 }
 
 export function logg(navn: Hendelse, detalj?: string) {
-  oppdater((o) => ({ ...o, hendelser: [...o.hendelser, { navn, tid: new Date().toISOString(), detalj }] }))
+  if (!les().some((o) => o.uuid === aktivOktId())) sikreOkt(innstForNyOkt)
+  const h: LoggHendelse = { navn, tid: new Date().toISOString(), detalj }
+  oppdater((o) => ({ ...o, hendelser: [...o.hendelser, h] }))
+  sendOgMerk(h)
 }
 
 /** Logger bare første gang i økten (f.eks. landing, pakke_vist) */
 export function loggEnGang(navn: Hendelse, detalj?: string) {
   const id = aktivOktId()
-  const o = les().find((x) => x.id === id)
-  if (o && !o.hendelser.some((h) => h.navn === navn)) logg(navn, detalj)
+  const o = les().find((x) => x.uuid === id)
+  if (!o || !o.hendelser.some((h) => h.navn === navn)) logg(navn, detalj)
 }
 
 export function avsluttOppgave(type: 'ferdig' | 'gitt_opp') {
   logg(type === 'ferdig' ? 'oppgave_ferdig' : 'oppgave_gitt_opp')
   oppdater((o) => (o.slutt ? o : { ...o, slutt: { type, tid: new Date().toISOString() } }))
+  synk((uuid) => sendAvslutning(uuid, type))
 }
 
 export function lagreTilbakemelding(t: Tilbakemelding) {
   oppdater((o) => ({ ...o, tilbakemelding: t }))
+  synk((uuid) => sendTilbakemelding(uuid, t))
   logg('tilbakemelding_sendt')
 }
 

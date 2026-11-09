@@ -18,6 +18,23 @@ Prototypen skal:
 2. teste formuleringen «Trengs for å fungere» mot «Ofte kjøpt sammen»,
 3. vise JDD at fagkunnskapen kan ligge i godkjente regler (fagperson-siden).
 
+## Backend (Supabase)
+
+Prototypen kan bruke en felles database, slik at **testloggen fra alle enheter samles på ett sted** og **fagpersonens regelendringer vises for alle**. Uten oppsett virker alt som før med lagring i nettleseren (bunnteksten viser hvilken lagring som er i bruk).
+
+Backenden lagrer bare anonyme testøkter (T1, T2 …), logghendelser, tilbakemeldinger og regler. Den lagrer **aldri** regnr, navn, e-post eller telefon. Selve anbefalingen regnes fortsatt ut i nettleseren.
+
+**Oppsett (én gang):**
+1. Opprett et Supabase-prosjekt (gratis, region EU, f.eks. Stockholm).
+2. Åpne *SQL Editor* i prosjektet, lim inn hele [`supabase/migrations/20261109000000_passer_min_bil.sql`](supabase/migrations/20261109000000_passer_min_bil.sql) og trykk *Run*. Da opprettes tabeller, tilgangsregler (RLS) og eksempelregler.
+3. Hent **Project URL** og **publishable key** (eller «anon public») under *Project Settings → API*. Bruk **aldri** `service_role`- eller secret-nøkkelen.
+4. I GitHub: *Settings → Secrets and variables → Actions → Variables* → legg inn `VITE_SUPABASE_URL` og `VITE_SUPABASE_PUBLISHABLE_KEY`.
+5. Kjør workflowen på nytt (*Actions → Deploy til GitHub Pages → Run workflow*).
+
+Lokalt: kopier `.env.example` til `.env.local` og fyll inn de samme verdiene.
+
+**Tilgang:** den publiserbare nøkkelen kan lese, legge til logghendelser og tilbakemeldinger, og lese og endre regler. Den kan ikke slette eller endre logg; det gjøres i Supabase-dashbordet (*Table Editor*). Fagperson-siden har ingen innlogging i prototypen, så alle med lenken kan endre regler. «Tilbakestill eksempeldata» setter dem tilbake.
+
 Kompatibilitet avgjøres **deterministisk** av en regeltabell (`src/data/regler.json`) via den rene funksjonen `src/logic/anbefal.ts`. Prototypen har ingen språkmodell. Hvert resultat er **Bekreftet**, **Regelutledet** eller **Ukjent**.
 
 ## Testlenker
@@ -39,7 +56,7 @@ Mål: minst to brukertester før visningen for JDD (målet fra WBS 4.2 er fem). 
 
 **Fiktive testskilt:** `PM 22022` Toyota RAV4 2022 (LED + CAN FD, Bekreftet) · `PM 12012` Volvo XC70 2012 (halogen, Bekreftet) · `PM 19019` Kia Sportage 2019 (regel i utkast → Ukjent) · `PM 17017` VW Golf 2018 (LED + CAN). Andre skilt gir «ikke funnet».
 
-**Logging:** `landing → bil_bekreftet → sporsmal_ferdig → pakke_vist → hvorfor_apnet → ikke_inkludert_apnet → fagperson_apnet → lagt_i_kurv → bestilt`, med tidsstempel. I tillegg logges `veileder_hoppet_over`, `led_besvart`, `fagperson_sporsmal`, Ferdig/Gi opp, variant, tid per oppgave og tilbakemeldingen. Alt er anonymt (T1, T2 …) og lagres bare i nettleserens localStorage. **Eksporter CSV fra samme nettleser som testen ble kjørt i.** CSV-filen bruker semikolon og UTF-8 og åpnes riktig i norsk Excel.
+**Logging:** Hendelsene samles i den felles databasen når backend er satt opp (se over), ellers bare i nettleseren. `landing → bil_bekreftet → sporsmal_ferdig → pakke_vist → hvorfor_apnet → ikke_inkludert_apnet → fagperson_apnet → lagt_i_kurv → bestilt`, med tidsstempel. I tillegg logges `veileder_hoppet_over`, `led_besvart`, `fagperson_sporsmal`, Ferdig/Gi opp, variant, tid per oppgave og tilbakemeldingen. Alt er anonymt (T1, T2 …). **Uten backend** lagres loggen bare i nettleseren, og da må CSV eksporteres fra samme nettleser som testen ble kjørt i. CSV-filen bruker semikolon og UTF-8 og åpnes riktig i norsk Excel.
 
 ## Skjermoversikt
 
@@ -100,15 +117,30 @@ npm run screenshots
 
 Skriptet lagrer bildene i `docs/screenshots/` og skriver ✔/✘ per akseptansekriterium (sist kjørt: 62/62 OK, 0 alvorlige axe-avvik).
 
+Backend-koden testes mot en falsk Supabase i nettleseren (to «enheter» som deler database). Start forhåndsvisningen i én terminal:
+
+```bash
+VITE_SUPABASE_URL=http://supabase.test VITE_SUPABASE_PUBLISHABLE_KEY=test npx vite build --outDir dist-backendtest && npx vite preview --outDir dist-backendtest --port 4174
+```
+
+Kjør testen i en annen terminal:
+
+```bash
+node scripts/backend-test.mjs
+```
+
+(Sist kjørt: 13/13 OK.)
+
 ## Struktur
 
 ```
+supabase/        SQL-migrasjon: tabeller, RLS og eksempelregler
 src/data/        eksempeldata: kjøretøy, regler, produkter, spørsmål, fagperson-svar
-src/logic/       anbefal.ts (regelmotor, ren funksjon), regnr.ts, logg.ts + Vitest-tester
+src/logic/       anbefal.ts (regelmotor, ren funksjon), backend.ts (Supabase), regnr.ts, logg.ts + Vitest-tester
 src/state/       app-tilstand (bil, svar, kurv, regler, testinnstillinger)
 src/components/  layout, fagperson-panel, felles komponenter, SVG-illustrasjoner
 src/pages/       én fil per skjerm
-scripts/         screenshots.mjs (Playwright + axe)
+scripts/         screenshots.mjs (Playwright + axe), backend-test.mjs (falsk Supabase)
 docs/            input, context, governance, diagrammer, skjermbilder, sjekkliste
 specs/001-…      spec.md, plan.md, tasks.md
 ```

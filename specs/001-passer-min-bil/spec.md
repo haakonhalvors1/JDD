@@ -134,7 +134,8 @@ Formatet er *Gitt / Når / Så*. ID-ene (AK-x.y) brukes i sjekklisten til slutt.
 | NF4 | Sporbarhet: regel og kilde vises | = AK-3.1 |
 | NF5 | Regler for ekstralys | AK-NF5: pakkesiden har en kort merknad (avklart tekst, se `docs/context/domeneregler.md` pkt. 4) merket «forslag, avklares med JDD», og hvert lyssett viser referansetallet sitt. |
 | NF6 | Tydelig prototype | AK-NF6: en stripe på hver side: «Prototype · eksempeldata · ingen ekte bestilling». Priser merket «eksempelpris». |
-| NF7 | Ingen backend, ingen LLM | AK-NF7: ingen nettverkskall etter at appen er lastet (bortsett fra statiske filer). |
+| NF7 | Ingen LLM. Backend bare for lagring (endret 9.11.2026) | AK-NF7: ingen nettverkskall utenom statiske filer og Supabase (testlogg og regler). Ingen regnr eller personopplysninger sendes. Appen virker med lokal lagring hvis backend mangler eller er nede. |
+| NF8 | Felles testlogg og regler (lagt til 9.11.2026) | AK-NF8.1: hendelser fra én enhet vises på `#/testlogg` og `#/innsikt` på en annen. AK-NF8.2: en regel som godkjennes på én enhet gir «Bekreftet» på en annen. AK-NF8.3: hendelser som ikke ble sendt, sendes på nytt ved neste lasting. AK-NF8.4: åpning av interne sider oppretter ikke tomme testøkter. |
 
 ## 6. Hovedflyt og alternative flyter
 
@@ -199,7 +200,8 @@ Fra hvilket som helst steg etter bil-steget: «Spør en fagperson» → panel me
 ## 9. Utenfor scope
 
 - Ekte kjøretøyoppslag på regnr, ekte modelltabell, Multicase-API og ekte produktdata, priser og lager.
-- Ekte betaling, ordre, e-post, chat eller telefon. Innlogging og brukerkontoer (Min garasje er bare localStorage).
+- Ekte betaling, ordre, e-post, chat eller telefon. Innlogging og brukerkontoer (Min garasje er bare localStorage, ikke i backend).
+- Tilgangskontroll på fagperson-siden (alle med lenken kan endre regler i prototypen).
 - LLM eller fri chat. Opplasting av bilde av frontlyset (vises som «kommer»).
 - Andre kategorier enn ekstralys (tilhenger, traktor, landbruk) og Bedrift-flyten (menyvalget finnes, men er ikke klikkbart).
 - Monteringsguide/video og bestilling av montering (fase 2, kun stub).
