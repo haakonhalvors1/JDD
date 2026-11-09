@@ -1,0 +1,40 @@
+{
+  "_merknad": "EKSEMPELDATA. Svaralternativene er gruppens forslag, avklares med JDD (e-post okt. 2026: antall lamper, festemetode, kontakttype).",
+  "standardsvar": { "lamper": 2, "feste": "grill", "kontakt": "vet_ikke" },
+  "sporsmal": [
+    {
+      "id": "lamper", "tittel": "Hvor mange lamper vil du ha?",
+      "hjelp": "De fleste velger to lamper. Fire gir mer lys til siden, men krever mer plass og et kabelsett eller relé som tåler fire. Én lampe passer for små biler eller midt i grillen.",
+      "valg": [
+        { "verdi": 1, "tekst": "1 lampe", "under": "Enkel, midt på bilen" },
+        { "verdi": 2, "tekst": "2 lamper", "under": "Vanligst" },
+        { "verdi": 4, "tekst": "4 lamper", "under": "Mest lys, mer montering" }
+      ]
+    },
+    {
+      "id": "feste", "tittel": "Hvor vil du feste lampene?",
+      "hjelp": "Skiltbrakett festes bak kjennemerket foran og er enklest å montere, uten boring. Støtfangerfeste sitter lavere. Takstativfeste krever at du har takstativ eller takgrind.",
+      "valg": [
+        { "verdi": "grill", "tekst": "Frontgrill / skiltbrakett", "under": "Enklest, ingen boring" },
+        { "verdi": "stotfanger", "tekst": "Støtfanger", "under": "Lavt plassert" },
+        { "verdi": "tak", "tekst": "Takstativ", "under": "Krever takstativ" }
+      ]
+    },
+    {
+      "id": "kontakt", "tittel": "Hvordan skal lysene kobles til bilen?",
+      "hjelp": "Noen biler har en ferdig kontakt for ekstralys fra fabrikken (ofte bak grillen). Har bilen ikke det, kobles lysene til fjernlyset. Er du usikker, velg «Vet ikke», så finner vi det ut ut fra bilen.",
+      "valg": [
+        { "verdi": "original", "tekst": "Bilens originale ekstralyskontakt", "under": "Ferdig kontakt fra fabrikken" },
+        { "verdi": "ingen", "tekst": "Ingen kontakt, kobles fra fjernlyset", "under": "Det vanligste" },
+        { "verdi": "vet_ikke", "tekst": "Vet ikke", "under": "Vi finner ut av det" }
+      ]
+    }
+  ],
+  "fagord": {
+    "Canbus": "Et digitalt nettverk som styrer lys og elektronikk i nyere biler. Lysene kan ikke kobles rett på ledningen til fjernlyset, for da gir bilen feilmelding eller slår av lyset.",
+    "CAN FD": "En nyere og raskere variant av Canbus. Krever et relé som forstår CAN FD.",
+    "Relé": "En liten boks som slår ekstralyset av og på sammen med fjernlyset. Et Canbus-relé leser signalet fra bilens Canbus i stedet for fra ledningen.",
+    "Kabelsett": "Ledninger, relé og sikring for å koble ekstralys til fjernlyset på biler uten Canbus.",
+    "Referansetall": "Et tall på lykten som sier hvor sterk den er. Det finnes en grense for summen av alle fjernlys på bilen."
+  }
+}

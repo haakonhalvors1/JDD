@@ -1,0 +1,19 @@
+{
+  "_merknad": "EKSEMPELDATA. Fiktive testskilt for simulert regnr-oppslag. Ingen ekte kjøretøydata.",
+  "kjoretoy": [
+    { "regnr": "PM22022", "merke": "Toyota", "modell": "RAV4", "ar": 2022 },
+    { "regnr": "PM12012", "merke": "Volvo", "modell": "XC70", "ar": 2012 },
+    { "regnr": "PM19019", "merke": "Kia", "modell": "Sportage", "ar": 2019 },
+    { "regnr": "PM17017", "merke": "Volkswagen", "modell": "Golf", "ar": 2018 }
+  ],
+  "modellvelger": [
+    { "merke": "Ford", "modeller": ["Ranger", "Transit"] },
+    { "merke": "Kia", "modeller": ["Sportage", "Ceed"] },
+    { "merke": "Skoda", "modeller": ["Octavia", "Kodiaq"] },
+    { "merke": "Toyota", "modeller": ["RAV4", "Hilux", "Land Cruiser"] },
+    { "merke": "Volkswagen", "modeller": ["Golf", "Amarok"] },
+    { "merke": "Volvo", "modeller": ["XC70", "XC60", "V90"] }
+  ],
+  "arFra": 2005,
+  "arTil": 2025
+}

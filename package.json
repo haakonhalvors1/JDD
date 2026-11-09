@@ -1,0 +1,31 @@
+{
+  "name": "passer-min-bil",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Klikkbar prototype av «Passer min bil» (IS-219, gruppe 1, JDD Utstyr)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@tailwindcss/vite": "^4.1.10",
+    "@types/node": "^22.15.30",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "tailwindcss": "^4.1.10",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.3"
+  }
+}

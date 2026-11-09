@@ -1,0 +1,26 @@
+{
+  "_merknad": "EKSEMPELDATA. Forhåndsskrevne svar. Ingen språkmodell. I en ekte løsning svarer en fagperson hos JDD.",
+  "fagperson": "Fagperson (eksempel)",
+  "sporsmal": [
+    {
+      "id": "montering", "sporsmal": "Kan jeg montere dette selv?",
+      "svar": "Ja, de fleste klarer det med vanlig verktøy på 1–2 timer: skrutrekker, 10 mm pipe og avbiter. Braketten festes bak skiltet, og reléet kobles til en kontakt i motorrommet, så du trenger ikke kutte i bilens ledninger. Du får monteringsguide og koblingsskjema for bilen din etter kjøpet. Blir du usikker underveis, kan du ringe oss."
+    },
+    {
+      "id": "rele", "sporsmal": "Hvorfor trenger jeg et relé?",
+      "svar": "Bilen din har LED-frontlys og Canbus. Da sendes fjernlyset som et digitalt signal, og et vanlig kabelsett får ikke med seg når fjernlyset slås på. Canbus-reléet leser signalet og slår ekstralyset av og på sammen med fjernlyset. Derfor er reléet med i pakken, og kabelsettet er tatt ut."
+    },
+    {
+      "id": "garanti", "sporsmal": "Hva skjer hvis det ikke passer?",
+      "svar": "Med Passer-garantien kan du returnere uten kostnad hvis veilederen anbefalte noe som ikke passer bilen din. Vi betaler returfrakten. (Vilkårene er et forslag som avklares med JDD.)"
+    },
+    {
+      "id": "levering", "sporsmal": "Når kommer pakken, og hva koster frakten?",
+      "svar": "Alt i pakken er på lager og sendes i én forsendelse. Leveringstid er 2–4 virkedager. Frakten er inkludert i prisen du ser i kassen, og det kommer ingen tillegg etterpå. (Eksempel.)"
+    },
+    {
+      "id": "lovlighet", "sporsmal": "Er dette lovlig på norske veier?",
+      "svar": "Ja, når lyktene er E-godkjente og kobles slik at de bare lyser sammen med fjernlyset. Det finnes også grenser for antall lykter og hvor sterke de er til sammen (referansetall). Pakken er satt sammen etter disse reglene. Se gjerne Statens vegvesen for detaljer."
+    }
+  ]
+}

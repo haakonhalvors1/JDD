@@ -1,0 +1,26 @@
+{
+  "_merknad": "EKSEMPELDATA. Fiktive varenavn og eksempelpriser, ikke JDDs ekte varer eller varenumre.",
+  "produkter": [
+    { "id": "LYS-N9-1", "navn": "Nordlys 9″ LED – enkeltlampe", "kategori": "lys", "niva": "basis", "lamperPerEnhet": 1, "pris": 1790, "referansetall": 17.5, "rekkeviddeM": 800, "fargetempBeskrivelse": "5700K", "fargetempTeknisk": "5500K", "kort": "Rund LED-lampe, E-godkjent. Rekkevidde ca. 800 m (1 lux)." },
+    { "id": "LYS-N9-2", "navn": "Nordlys 9″ LED – sett (2 stk.)", "kategori": "lys", "niva": "basis", "lamperPerEnhet": 2, "pris": 3190, "referansetall": 17.5, "rekkeviddeM": 800, "fargetempBeskrivelse": "5700K", "fargetempTeknisk": "5500K", "kort": "To runde LED-lamper, E-godkjent. Rekkevidde ca. 800 m (1 lux)." },
+    { "id": "LYS-N9P-1", "navn": "Nordlys 9″ LED Pro – enkeltlampe", "kategori": "lys", "niva": "anbefalt", "lamperPerEnhet": 1, "pris": 2390, "referansetall": 25, "rekkeviddeM": 1150, "fargetempBeskrivelse": "6000K", "fargetempTeknisk": "6000K", "kort": "Kraftigere LED-lampe med bredere lysbilde, E-godkjent. Rekkevidde ca. 1 150 m (1 lux)." },
+    { "id": "LYS-N9P-2", "navn": "Nordlys 9″ LED Pro – sett (2 stk.)", "kategori": "lys", "niva": "anbefalt", "lamperPerEnhet": 2, "pris": 4290, "referansetall": 25, "rekkeviddeM": 1150, "fargetempBeskrivelse": "6000K", "fargetempTeknisk": "6000K", "kort": "To kraftigere LED-lamper med bredere lysbilde, E-godkjent. Rekkevidde ca. 1 150 m (1 lux)." },
+
+    { "id": "BRK-GRILL", "navn": "Skiltbrakett / grillfeste (for 2 lamper)", "kategori": "brakett", "feste": "grill", "pris": 490, "kort": "Festes bak kjennemerket foran. Ingen boring." },
+    { "id": "BRK-STOT", "navn": "Støtfangerfeste (for 2 lamper)", "kategori": "brakett", "feste": "stotfanger", "pris": 690, "kort": "Festes i nedre del av støtfangeren." },
+    { "id": "BRK-TAK", "navn": "Takstativfeste (for 2 lamper)", "kategori": "brakett", "feste": "tak", "pris": 890, "kort": "Festes på takstativ eller takgrind (ikke inkludert)." },
+
+    { "id": "KAB-2", "navn": "Kabelsett med relé, 2 lamper", "kategori": "kabelsett", "forLamper": 2, "pris": 590, "kort": "Kobles til fjernlyset. For biler uten Canbus." },
+    { "id": "KAB-4", "navn": "Kabelsett med relé, 4 lamper", "kategori": "kabelsett", "forLamper": 4, "pris": 790, "kort": "Kobles til fjernlyset. For biler uten Canbus." },
+    { "id": "PNP-ORIG", "navn": "Plug-and-play-kabel til original ekstralyskontakt", "kategori": "plugplay", "forLamper": 4, "pris": 390, "kort": "For biler som har ferdig kontakt for ekstralys fra fabrikken, uten Canbus." },
+
+    { "id": "REL-CAN", "navn": "Canbus-relé CAN", "kategori": "rele", "stotter": ["CAN"], "pris": 1590, "kort": "Leser fjernlyssignalet fra bilens Canbus (klassisk CAN). Erstatter kabelsettet." },
+    { "id": "REL-CANFD", "navn": "Canbus-relé CAN FD", "kategori": "rele", "stotter": ["CAN FD"], "pris": 2090, "kort": "Leser fjernlyssignalet fra nyere biler med CAN FD. Erstatter kabelsettet." },
+    { "id": "REL-UNI", "navn": "Universalrelé CAN / CAN FD", "kategori": "rele", "stotter": ["CAN", "CAN FD"], "pris": 2590, "kort": "Støtter både CAN og CAN FD. Brukes når vi ikke vet hvilken Canbus-type bilen har." },
+    { "id": "FGR-4", "navn": "Forgreningskabel for 4 lamper", "kategori": "forgrening", "pris": 290, "kort": "Kobler fire lamper til ett Canbus-relé." },
+
+    { "id": "OFT-BRYTER", "navn": "Bryterpanel med indikator", "kategori": "ofte", "pris": 349, "kort": "Slå ekstralyset av og på uavhengig av fjernlyset. Ikke nødvendig." },
+    { "id": "OFT-DEKSEL", "navn": "Beskyttelsesdeksel (2 stk.)", "kategori": "ofte", "pris": 249, "kort": "Beskytter glasset mot steinsprut om sommeren." },
+    { "id": "OFT-BOKS", "navn": "Vanntett koblingsboks", "kategori": "ofte", "pris": 199, "kort": "Ryddigere og tettere skjøter i motorrommet." }
+  ]
+}

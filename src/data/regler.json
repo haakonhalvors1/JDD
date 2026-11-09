@@ -1,0 +1,45 @@
+{
+  "_merknad": "EKSEMPELDATA. Kompatibilitetsregler på modellnivå. I en ekte løsning legges de inn og godkjennes av JDDs fagpersoner (K4).",
+  "regler": [
+    {
+      "id": "R-001", "merke": "Toyota", "modell": "RAV4", "arFra": 2019, "arTil": 2024,
+      "frontlys": "LED", "canbus": "CAN FD", "krever": "rele", "releId": "REL-CANFD",
+      "kilde": "Service safari 12.10.2026 (byggemodul og chat) + fagperson (eksempel)",
+      "status": "godkjent", "godkjentAv": "Fagperson A (eksempel)", "godkjentDato": "2026-10-20",
+      "merknad": "LED-frontlys og Canbus med CAN FD. Fjernlyssignalet kan ikke tappes direkte."
+    },
+    {
+      "id": "R-002", "merke": "Volvo", "modell": "XC70", "arFra": 2008, "arTil": 2013,
+      "frontlys": "halogen", "canbus": "nei", "krever": "kabelsett",
+      "kilde": "Fagperson (eksempel)",
+      "status": "godkjent", "godkjentAv": "Fagperson A (eksempel)", "godkjentDato": "2026-10-20",
+      "merknad": "Halogen fjernlys. Standard kabelsett med relé kobles til fjernlyset."
+    },
+    {
+      "id": "R-003", "merke": "Volkswagen", "modell": "Golf", "arFra": 2017, "arTil": 2020,
+      "frontlys": "LED", "canbus": "CAN", "krever": "rele", "releId": "REL-CAN",
+      "kilde": "Produsentens relétabell (eksempel)",
+      "status": "godkjent", "godkjentAv": "Fagperson B (eksempel)", "godkjentDato": "2026-10-28",
+      "merknad": "LED-frontlys med klassisk CAN."
+    },
+    {
+      "id": "R-004", "merke": "Kia", "modell": "Sportage", "arFra": 2016, "arTil": 2021,
+      "frontlys": "LED", "canbus": "CAN", "krever": "rele", "releId": "REL-CAN",
+      "kilde": "Kundesenter-henvendelse (eksempel), ikke kontrollert",
+      "status": "utkast",
+      "merknad": "Utkast fra kundesenteret. Må kontrolleres av fagperson før den brukes som bekreftet."
+    }
+  ],
+  "utledning": [
+    {
+      "id": "U-001", "ledSvar": "ja", "krever": "rele", "releId": "REL-UNI",
+      "beskrivelse": "Kunden svarer at bilen har LED-frontlys. LED-frontlys henger normalt sammen med Canbus, så et vanlig kabelsett fungerer ikke. Vi vet ikke hvilken Canbus-type bilen har, og velger derfor et universalrelé som støtter både CAN og CAN FD.",
+      "kilde": "Byggemodulen på dagens nettbutikk: «Har bilen LED-lys og Canbus, trengs et relé» (service safari 12.10.2026)"
+    },
+    {
+      "id": "U-002", "ledSvar": "nei", "krever": "kabelsett",
+      "beskrivelse": "Kunden svarer at bilen har halogen-frontlys. Da kan ekstralyset kobles til fjernlyset med et standard kabelsett.",
+      "kilde": "Byggemodulen på dagens nettbutikk (service safari 12.10.2026)"
+    }
+  ]
+}
