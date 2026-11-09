@@ -1,0 +1,25 @@
+%% Sitemap for «Passer min bil» (prototype). Kundens rute fra Oppgave 4 øverst, interne sider nederst.
+flowchart LR
+  F["Forside<br/>#/"] --> L["Landingsside per bilmodell<br/>#/ekstralys/toyota-rav4"]
+  F --> P["Passer min bil<br/>#/passer"]
+  L --> P
+  P --> B["Regnr eller modell<br/>bekreft bil · modelltabell<br/>#/passer/bil"]
+  B --> S["Tre spørsmål<br/>#/passer/sporsmal"]
+  S --> PK["Pakke med forklaring<br/>#/passer/pakke"]
+  PK --> K["Handlekurv<br/>#/kurv"]
+  K --> KA["Kasse<br/>#/kasse"]
+  KA --> O["Oppfølging<br/>#/bekreftelse"]
+  O --> T["Tilbakemelding (test)<br/>#/tilbakemelding"]
+
+  FP(["Fagperson-panel<br/>chat · ring meg"]) -.- B
+  FP -.- S
+  FP -.- PK
+  FP -.- KA
+
+  subgraph Interne sider
+    A["Fagperson: regler og datakvalitet<br/>#/fagperson (K4)"]
+    I["Kundesenter: innsikt<br/>#/innsikt (K8)"]
+    TL["Testlogg + CSV<br/>#/testlogg"]
+  end
+  A -. godkjente regler .-> B
+  TL --> I

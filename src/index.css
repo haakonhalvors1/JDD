@@ -24,6 +24,8 @@ body { background: #fff; color: var(--color-tekst); font-family: var(--font-sans
 
 /* Synlig fokus (WCAG 2.4.7) */
 :focus-visible { outline: 3px solid var(--color-info); outline-offset: 2px; border-radius: 4px; }
+/* Hovedinnholdet får programmatisk fokus ved sidebytte (skjermleser), uten synlig ramme */
+#hoved:focus, #hoved:focus-visible { outline: none; }
 
 @utility knapp { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-3 font-semibold min-h-11 transition-colors disabled:opacity-60 disabled:cursor-not-allowed; }
 @utility knapp-primar { @apply knapp bg-aksent text-white hover:bg-aksent-mork; }

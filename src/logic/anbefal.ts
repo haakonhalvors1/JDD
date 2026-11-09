@@ -235,7 +235,7 @@ export function anbefal(input: AnbefalInput): Resultat {
   const lysB = basis.linjer[0].produkt
   const lysA = anbefalt.linjer[0].produkt
   anbefalt.ekstra = {
-    tekst: `Kraftigere lys: ca. ${lysA.rekkeviddeM} m rekkevidde mot ${lysB.rekkeviddeM} m, og bredere lysbilde. Relé/kabelsett og brakett er de samme som i basis.`,
+    tekst: `Kraftigere lys: ca. ${lysA.rekkeviddeM?.toLocaleString('nb-NO')} m rekkevidde mot ${lysB.rekkeviddeM?.toLocaleString('nb-NO')} m, og bredere lysbilde. Relé/kabelsett og brakett er de samme som i basis.`,
     merpris: anbefalt.sum - basis.sum,
   }
 

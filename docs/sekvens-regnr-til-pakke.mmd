@@ -1,0 +1,35 @@
+%% Sekvens: fra regnr til pakke. Ingen backend og ingen LLM: alt skjer i nettleseren mot eksempeldata.
+sequenceDiagram
+  autonumber
+  actor K as Kunde (Martin)
+  participant UI as Nettleser (React)
+  participant O as Regnr-oppslag (simulert, kjoretoy.json)
+  participant R as Regelmotor anbefal() (ren funksjon)
+  participant T as Regeltabell (regler.json + fagpersonens endringer)
+  participant L as Testlogg (localStorage)
+
+  K->>UI: Taster «PM 22022»
+  UI->>O: slaOppRegnr("PM22022")
+  O-->>UI: Toyota RAV4 2022
+  UI-->>K: «Toyota RAV4 2022 – stemmer det?»
+  K->>UI: Ja
+  UI->>L: bil_bekreftet
+  UI->>R: anbefal(bil, ledSvar=null, svar, regeldata, produkter)
+  R->>T: finn godkjent regel for merke/modell/år
+  T-->>R: R-001: LED, CAN FD → REL-CANFD (godkjent)
+  R-->>UI: status Bekreftet + oppsett
+  UI-->>K: Modelltabell + status «Bekreftet»
+  K->>UI: Svarer på tre spørsmål (2 lamper, grill, vet ikke)
+  UI->>L: sporsmal_ferdig
+  UI->>R: anbefal(..., svar)
+  R-->>UI: basis + anbefalt (lys, brakett, CAN FD-relé),<br/>hvorfor/regel/kilde per linje, ikke inkludert, ofte kjøpt (separat)
+  UI->>L: pakke_vist
+  UI-->>K: Pakkeside med «Passer din bil» og Passer-garanti
+
+  alt Ingen godkjent regel (f.eks. Kia Sportage)
+    R-->>UI: status Ukjent, nesteSteg = spor_led
+    UI-->>K: «Har bilen LED-frontlys?» med bilde
+    K->>UI: Ja, LED
+    UI->>R: anbefal(..., ledSvar="ja")
+    R-->>UI: status Regelutledet (U-001) → universalrelé
+  end

@@ -1,0 +1,28 @@
+%% Brukerflyt med hovedflyt og alternative flyter (A1–A5). Logghendelser i hakeparentes.
+flowchart TD
+  start(["Martin googler «ekstralys RAV4»"]) --> land["Landingsside, regnr-felt øverst<br/>[landing]"]
+  land --> valg{Regnr eller modell?}
+  valg -- regnr --> oppslag{Treff i oppslaget?}
+  valg -- "merke/modell/år (A4)" --> bek
+  oppslag -- ja --> bek{"«Toyota RAV4 2022 – stemmer det?»"}
+  oppslag -- nei --> ikke["Ikke funnet:<br/>velg modell eller fagperson"]
+  ikke --> valg
+  bek -- "nei (A5)" --> valg
+  bek -- "ja [bil_bekreftet]" --> regel{Godkjent regel<br/>i modelltabellen?}
+  regel -- ja --> bekreftet["Status: Bekreftet<br/>modelltabell: LED, CAN FD"]
+  regel -- "nei (A1)" --> ukjent["Status: Ukjent<br/>«Har bilen LED-frontlys?» med bilde"]
+  ukjent -- "Ja, LED" --> utledet["Status: Regelutledet<br/>universalrelé + «fagperson kan bekrefte rimeligere»"]
+  ukjent -- "Nei, halogen" --> utledet2["Status: Regelutledet<br/>kabelsett"]
+  ukjent -- "Vet ikke" --> fag
+  bekreftet --> sp
+  utledet --> sp
+  utledet2 --> sp
+  sp["Tre spørsmål: lamper · feste · kontakt"] -- "svarer [sporsmal_ferdig]" --> pakke
+  sp -- "hopp over (A2) [veileder_hoppet_over]" --> pakke
+  pakke["Pakke: basis + anbefalt [pakke_vist]<br/>Trengs for å fungere ≠ Ofte kjøpt sammen"]
+  pakke -- "[hvorfor_apnet] / [ikke_inkludert_apnet]" --> pakke
+  pakke -- "(A3) [fagperson_apnet]" --> fag["Fagperson: chat eller ring meg<br/>ser bil + kurv"]
+  fag --> pakke
+  pakke -- "legg hele pakken i kurven [lagt_i_kurv]" --> kurv["Kurv: advarsel hvis nødvendig del fjernes"]
+  kurv --> kasse["Kasse: levering, garanti,<br/>samtykke «Min garasje»"]
+  kasse -- "[bestilt]" --> ferdig["Bekreftelse: monteringsguide (stub)<br/>+ «Fungerte det?»-e-post"]

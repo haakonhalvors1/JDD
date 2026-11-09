@@ -21,7 +21,7 @@ Les `docs/governance/constitution.md` før du endrer noe. Den går foran alt ann
 
 ## Teknikk
 - Vite + React + TypeScript + Tailwind, `HashRouter` (GitHub Pages). Ingen backend. Tilstand i minnet og localStorage.
-- Tester: Vitest (`src/logic/*.test.ts`). Skjermbilder: Playwright (`scripts/screenshots.ts`).
+- Tester: Vitest (`src/logic/*.test.ts`). Skjermbilder og akseptsjekker: Playwright + axe (`scripts/screenshots.mjs`, krever `npx vite preview --port 4173`).
 - Deploy: GitHub Actions → GitHub Pages.
 
 ## Kommandoer

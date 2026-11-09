@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| Status | **Utkast – venter på godkjenning fra gruppen** |
+| Status | **Godkjent 9.11.2026** («Godkjent, bare bygg») |
 | Dato | 2026-11-09 |
 | Kilder | Oppg. 3 (service safari, persona, fiskebein), Oppg. 4 (konsept, verdiforslag, tjenesteplan, K1–K9, WBS, sitemap), `docs/context/` |
 | Styres av | `docs/governance/constitution.md` (G1–G9) |
@@ -174,7 +174,8 @@ Fra hvilket som helst steg etter bil-steget: «Spør en fagperson» → panel me
 | --- | --- | --- | --- | --- | --- |
 | PM 22022 | Toyota RAV4 2022 | LED | CAN FD | R-001 Godkjent | Bekreftet → CAN FD-relé |
 | PM 12012 | Volvo XC70 2012 | Halogen | Nei | R-002 Godkjent | Bekreftet → kabelsett |
-| PM 19019 | Kia Sportage 2019 | – | – | Ingen | Ukjent → «Har bilen LED-frontlys?» |
+| PM 19019 | Kia Sportage 2019 | (LED) | (CAN) | R-004 **Utkast** | Ukjent → «Har bilen LED-frontlys?». Blir Bekreftet når fagperson godkjenner R-004 (demo av K4) |
+| PM 17017 | Volkswagen Golf 2018 | LED | CAN | R-003 Godkjent | Bekreftet → CAN-relé |
 | (annet) | – | – | – | – | Ikke funnet → modellvelger/fagperson |
 
 **Produkter** (fiktive navn, eksempelpriser):
@@ -215,16 +216,19 @@ Fra hvilket som helst steg etter bil-steget: «Spør en fagperson» → panel me
 6. Teksten om regler for ekstralys (Statens vegvesen).
 7. Partnerverksted for montering.
 
-## 11. Kravsporing (fylles ut under implementering)
+## 11. Kravsporing
 
-| Krav | Implementert i | Test |
+| Krav | Implementert i | Automatisk test |
 | --- | --- | --- |
-| K1 | | |
-| K2 | `src/logic/anbefal.ts` | `anbefal.test.ts` |
-| K3 | | |
-| K4 | | |
-| K5 | | |
-| K6 | | |
-| K7 | | |
-| K8 | | |
-| K9 | | |
+| K1 | `components/BilSkjema.tsx` (regnr, modellvelger), `pages/Landing.tsx`, `pages/Bil.tsx`, `logic/regnr.ts`, `logic/anbefal.ts` (`finnRegel`) | `anbefal.test.ts` (oppslag, årsintervall), `scripts/screenshots.mjs` (AK-1.1–1.7) |
+| K2 | `logic/anbefal.ts` (`byggPakke`), `pages/Pakke.tsx`, `pages/Kasse.tsx` (`KurvSide`, advarsel) | `anbefal.test.ts` (alle tre scenarioer, G3 for 54 kombinasjoner), AK-2.1–2.5 i skriptet |
+| K3 | `logic/anbefal.ts` (`hvorfor`, `ikkeInkludert`), `pages/Pakke.tsx` (`Utvid`) | `anbefal.test.ts` (K3), AK-3.3 i skriptet |
+| K4 | `pages/FagpersonAdmin.tsx`, `state/AppState.tsx` (`lagreRegler`), `data/regler.json` | `anbefal.test.ts` (AK-4.4 begge veier), AK-4.2–4.6 i skriptet |
+| K5 | `pages/Sporsmal.tsx`, `data/sporsmal.json`, `components/Felles.tsx` (`Fagord`) | AK-5.4 i skriptet, «hopp over» i `anbefal.test.ts` |
+| K6 | `components/FagpersonPanel.tsx`, `data/fagperson-svar.json` | AK-6.2 i skriptet |
+| K7 | `components/Felles.tsx` (`Garantimerke`, `Garantivilkar`), `pages/Pakke.tsx`, `pages/Kasse.tsx` | Skjermbilder 08, 14 |
+| K8 | `pages/Testsider.tsx` (`Innsikt`), `logic/logg.ts` | `logg.test.ts`, skjermbilde 18 |
+| K9 | `pages/Kasse.tsx` (`BekreftelseSide`), `components/Illustrasjoner.tsx` (`Koblingsskjema`) | Skjermbilde 15 |
+| Test | `components/Layout.tsx` (`TestStripe`), `state/AppState.tsx` (variant), `logic/logg.ts`, `pages/Testsider.tsx` | `logg.test.ts`, logg-sjekker i skriptet |
+
+Sjekklisten med ✔/✘ per akseptansekriterium ligger i `docs/sjekkliste.md`.

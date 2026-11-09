@@ -66,7 +66,7 @@ function PakkeKort({ pakke, resultat, trengsTittel }: { pakke: Pakke; resultat: 
                     {l.produkt.navn}
                   </p>
                   <p className="text-sm text-dempet">{l.produkt.kort}</p>
-                  {l.produkt.referansetall && <p className="text-xs text-dempet"><Fagord ord="Referansetall" />: {l.produkt.referansetall} per lampe</p>}
+                  {l.produkt.referansetall && <p className="text-xs text-dempet"><Fagord ord="Referansetall" />: {l.produkt.referansetall.toLocaleString('nb-NO')} per lampe</p>}
                 </div>
                 <span className="text-sm font-semibold whitespace-nowrap">{kr(l.produkt.pris * l.antall)}</span>
               </div>

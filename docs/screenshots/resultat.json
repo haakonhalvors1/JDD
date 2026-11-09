@@ -1,0 +1,368 @@
+{
+  "axe": {
+    "mobil-01-forside": [],
+    "mobil-02-landingsside-rav4": [],
+    "mobil-03-bekreft-bil": [],
+    "mobil-04-modelltabell": [],
+    "mobil-05-sporsmal-1": [],
+    "mobil-06-sporsmal-forklaring": [],
+    "mobil-07-sporsmal-3": [],
+    "mobil-08-pakke": [],
+    "mobil-09-pakke-hvorfor-ikke-inkludert": [],
+    "mobil-10-fagperson-chat": [],
+    "mobil-12-kurv": [],
+    "mobil-13-kurv-advarsel": [],
+    "mobil-14-kasse": [],
+    "mobil-15-bekreftelse": [],
+    "mobil-16-tilbakemelding": [],
+    "mobil-17-testlogg": [],
+    "mobil-18-innsikt": [],
+    "mobil-19-ukjent-led-sporsmal": [],
+    "mobil-20-ukjent-vet-ikke": [],
+    "mobil-21-regelutledet": [],
+    "mobil-22-pakke-regelutledet-hoppet-over": [],
+    "mobil-23-modellvelger": [],
+    "mobil-24-pakke-xc70-kabelsett": [],
+    "mobil-25-pakke-variant-b-oppgave-2": [],
+    "mobil-26-fagperson-regler": [],
+    "mobil-27-fagperson-rediger": [],
+    "desktop-01-forside": [],
+    "desktop-02-landingsside-rav4": [],
+    "desktop-03-bekreft-bil": [],
+    "desktop-04-modelltabell": [],
+    "desktop-05-sporsmal-1": [],
+    "desktop-06-sporsmal-forklaring": [],
+    "desktop-07-sporsmal-3": [],
+    "desktop-08-pakke": [],
+    "desktop-09-pakke-hvorfor-ikke-inkludert": [],
+    "desktop-10-fagperson-chat": [],
+    "desktop-12-kurv": [],
+    "desktop-13-kurv-advarsel": [],
+    "desktop-14-kasse": [],
+    "desktop-15-bekreftelse": [],
+    "desktop-16-tilbakemelding": [],
+    "desktop-17-testlogg": [],
+    "desktop-18-innsikt": [],
+    "desktop-19-ukjent-led-sporsmal": [],
+    "desktop-20-ukjent-vet-ikke": [],
+    "desktop-21-regelutledet": [],
+    "desktop-22-pakke-regelutledet-hoppet-over": [],
+    "desktop-23-modellvelger": [],
+    "desktop-24-pakke-xc70-kabelsett": [],
+    "desktop-25-pakke-variant-b-oppgave-2": [],
+    "desktop-26-fagperson-regler": [],
+    "desktop-27-fagperson-rediger": []
+  },
+  "sjekker": [
+    {
+      "navn": "AK-1.1 Regnr-felt synlig uten scroll på 390 px",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.2 «Toyota RAV4 2022 – stemmer det?»",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.3 Modelltabell viser CAN FD og Bekreftet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.1 RAV4-pakken har CAN FD-relé",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.6 RAV4-pakken har ikke kabelsett",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "G4 Basis og anbefalt vises",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Variant a: «Trengs for å fungere»",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-3.3 «Hvorfor dette?» for relé nevner Canbus og regel R-001",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-6.2 Fagperson ser bil og kurv",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.5 Advarsel når relé fjernes",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.7 Samtykke ikke forhåndsavkrysset",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.7 Regnr ikke lagret uten samtykke",
+      "ok": true,
+      "detalj": "pmb.logg"
+    },
+    {
+      "navn": "Logg: Landing",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: Bil bekreftet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: Spørsmål ferdig",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: Pakke vist",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: «Hvorfor dette?» åpnet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: «Ikke inkludert» åpnet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: Fagperson åpnet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: Lagt i kurv",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Logg: Bestilt",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "G2 Kia vises som Ukjent, ikke Bekreftet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "A1 «Vet ikke» tilbyr fagperson",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.3 «Ja, LED» gir Regelutledet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.3 Universalrelé + merknad om rimeligere relé",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-5.4 Hopp over viser standardvalg",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.2 XC70 har kabelsett og ikke relé i pakken",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Variant b: «Ofte kjøpt sammen» over nødvendig tilbehør, «Andre kjøpte også» for valgfritt",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.3 Godkjenn R-004",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.4 Kia blir Bekreftet etter godkjenning",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.2 Redigert regel blir utkast",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.4 RAV4 faller til Ukjent når R-001 er utkast",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.5 Tilbakestill gjenoppretter regler",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.6 Datakvalitet flagger 5500K/5700K",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Ingen JS-feil (mobil)",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "NF2 axe: 0 alvorlige/kritiske avvik (mobil)",
+      "ok": true,
+      "detalj": "0 skjermer med avvik"
+    },
+    {
+      "navn": "AK-1.2 «Toyota RAV4 2022 – stemmer det?»",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.3 Modelltabell viser CAN FD og Bekreftet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.1 RAV4-pakken har CAN FD-relé",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.6 RAV4-pakken har ikke kabelsett",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "G4 Basis og anbefalt vises",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Variant a: «Trengs for å fungere»",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-3.3 «Hvorfor dette?» for relé nevner Canbus og regel R-001",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-6.2 Fagperson ser bil og kurv",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.5 Advarsel når relé fjernes",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.7 Samtykke ikke forhåndsavkrysset",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-1.7 Regnr ikke lagret uten samtykke",
+      "ok": true,
+      "detalj": "pmb.logg"
+    },
+    {
+      "navn": "G2 Kia vises som Ukjent, ikke Bekreftet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "A1 «Vet ikke» tilbyr fagperson",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.3 «Ja, LED» gir Regelutledet",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.3 Universalrelé + merknad om rimeligere relé",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-5.4 Hopp over viser standardvalg",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-2.2 XC70 har kabelsett og ikke relé i pakken",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Variant b: «Ofte kjøpt sammen» over nødvendig tilbehør, «Andre kjøpte også» for valgfritt",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.3 Godkjenn R-004",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.4 Kia blir Bekreftet etter godkjenning",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.2 Redigert regel blir utkast",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.4 RAV4 faller til Ukjent når R-001 er utkast",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.5 Tilbakestill gjenoppretter regler",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "AK-4.6 Datakvalitet flagger 5500K/5700K",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "Ingen JS-feil (desktop)",
+      "ok": true,
+      "detalj": ""
+    },
+    {
+      "navn": "NF2 axe: 0 alvorlige/kritiske avvik (desktop)",
+      "ok": true,
+      "detalj": "0 skjermer med avvik"
+    }
+  ]
+}

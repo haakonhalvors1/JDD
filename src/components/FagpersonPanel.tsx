@@ -123,7 +123,7 @@ export function FagpersonPanel() {
 
         {fane === 'chat' ? (
           <div id="fane-chat" role="tabpanel" aria-labelledby="tab-chat" className="flex min-h-0 flex-1 flex-col">
-            <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3" aria-live="polite">
+            <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3" aria-live="polite" role="log" aria-label="Samtale" tabIndex={0}>
               <p className="rounded-lg bg-flate p-3 text-sm">
                 <span className="font-semibold">{fagpersonSvar.fagperson}:</span> Hei! Jeg ser bilen og handlekurven din. Hva lurer du på?
               </p>
