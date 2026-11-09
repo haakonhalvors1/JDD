@@ -43,7 +43,7 @@ export function KurvSide() {
         <div role="alert" className="rounded-lg border-2 border-aksent bg-aksent-lys p-3">
           {mangler.map((m) => (
             <p key={m.produkt.id} className="font-semibold">
-              ⚠ Uten {m.produkt.navn.toLowerCase()} vil lysene ikke fungere på din bil.
+              Uten {m.produkt.navn.toLowerCase()} vil lysene ikke fungere på din bil.
             </p>
           ))}
           <button type="button" className="knapp-primar mt-2 min-h-10 py-2 text-sm" onClick={() => leggPakkeIKurv(valgtPakke)}>
@@ -155,11 +155,11 @@ export function KasseSide() {
           <Pris belop={sum} />
         </div>
         <p className="mt-2 text-sm">
-          <span aria-hidden="true">🚚</span> På lager. Leveringstid 2–4 virkedager. <strong>Ingen skjulte tillegg.</strong>
+          På lager. Leveringstid 2–4 virkedager. <strong>Ingen skjulte tillegg.</strong>
         </p>
         {mangler.length > 0 && (
           <p role="alert" className="mt-2 rounded-md bg-aksent-lys p-2 text-sm font-semibold">
-            ⚠ Ordren mangler deler som trengs for at lysene skal fungere. <Link to="/kurv" className="underline">Se kurven</Link>
+            Ordren mangler deler som trengs for at lysene skal fungere. <Link to="/kurv" className="underline">Se kurven</Link>
           </p>
         )}
       </section>
@@ -271,7 +271,7 @@ export function BekreftelseSide() {
 
       {garasje && (
         <p className="text-sm">
-          🚗 {garasje.merke} {garasje.modell} er lagret i Min garasje.{' '}
+          {garasje.merke} {garasje.modell} er lagret i Min garasje.{' '}
           <button type="button" className="knapp-lenke min-h-0" onClick={glemGarasje}>Slett fra Min garasje</button>
         </p>
       )}

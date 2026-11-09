@@ -35,7 +35,7 @@ function PakkeKort({ pakke, resultat, trengsTittel }: { pakke: Pakke; resultat: 
           </span>
         ) : (
           <span className="etikett border border-info bg-info-lys text-sm text-info">
-            <span aria-hidden="true">ⓘ</span> Passer ut fra svarene dine
+            Passer ut fra svarene dine
           </span>
         )}
       </div>
@@ -83,7 +83,7 @@ function PakkeKort({ pakke, resultat, trengsTittel }: { pakke: Pakke; resultat: 
         </ul>
       </section>
 
-      <Utvid tittel="Ikke inkludert" ikon="⊘" className="mt-2 border-t border-linje pt-1" vedApning={() => logg('ikke_inkludert_apnet', pakke.niva)}>
+      <Utvid tittel="Ikke inkludert" className="mt-2 border-t border-linje pt-1" vedApning={() => logg('ikke_inkludert_apnet', pakke.niva)}>
         <ul className="space-y-2 text-sm">
           {pakke.ikkeInkludert.map((i) => (
             <li key={i.tekst} className="rounded-md bg-flate p-2">

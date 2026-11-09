@@ -90,7 +90,7 @@ export function RegnrSkjema({ autofokus, kompakt }: { autofokus?: boolean; kompa
 
       {garasje && (
         <p className="mt-3 text-sm">
-          <span aria-hidden="true">🚗</span> Min garasje:{' '}
+          Min garasje:{' '}
           <button type="button" className="knapp-lenke min-h-0" onClick={() => sok(garasje.regnr)}>
             Bruk {garasje.merke} {garasje.modell} {garasje.ar} ({visRegnr(garasje.regnr)})
           </button>

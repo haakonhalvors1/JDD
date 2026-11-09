@@ -82,7 +82,7 @@ export function SporsmalSide() {
           </div>
         </fieldset>
 
-        <Utvid tittel="Hva betyr dette?" ikon="ⓘ" className="mt-3">
+        <Utvid tittel="Hva betyr dette?" className="mt-3">
           <div className="flex gap-3 rounded-md bg-info-lys p-3 text-sm">
             <Bilde className="w-24 shrink-0" />
             <p>{s.hjelp}</p>

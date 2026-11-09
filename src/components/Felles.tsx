@@ -8,12 +8,14 @@ import { useApp } from '../state/AppState'
 export function StatusMerke({ status, stor }: { status: Status; stor?: boolean }) {
   const s = {
     bekreftet: { tekst: 'Bekreftet', ikon: '✓', kl: 'bg-ok-lys text-ok border-ok', hjelp: 'fra modelltabellen, godkjent av fagperson' },
-    regelutledet: { tekst: 'Regelutledet', ikon: 'ⓘ', kl: 'bg-info-lys text-info border-info', hjelp: 'ut fra svarene dine' },
+    regelutledet: { tekst: 'Regelutledet', ikon: 'i', kl: 'bg-info-lys text-info border-info', hjelp: 'ut fra svarene dine' },
     ukjent: { tekst: 'Ukjent', ikon: '?', kl: 'bg-varsel-lys text-varsel border-varsel', hjelp: 'ikke bekreftet ennå' },
   }[status]
   return (
     <span className={`etikett border ${s.kl} ${stor ? 'text-sm px-3 py-1' : ''}`}>
-      <span aria-hidden="true">{s.ikon}</span>
+      <span aria-hidden="true" className="grid size-4 shrink-0 place-items-center rounded-full border border-current text-[10px] leading-none font-bold">
+        {s.ikon}
+      </span>
       <span>
         {s.tekst}
         <span className="sr-only">: {s.hjelp}</span>
@@ -106,7 +108,7 @@ export function FagpersonKnapp({ fra, variant = 'sekundar' }: { fra: string; var
       onClick={() => apneFagperson(fra)}
       className={variant === 'lenke' ? 'knapp-lenke' : 'knapp-sekundar w-full sm:w-auto'}
     >
-      <span aria-hidden="true">💬</span> Spør en fagperson
+      Spør en fagperson
     </button>
   )
 }
@@ -114,7 +116,7 @@ export function FagpersonKnapp({ fra, variant = 'sekundar' }: { fra: string; var
 export function Garantimerke() {
   return (
     <span className="etikett border border-ok bg-ok-lys text-ok">
-      <span aria-hidden="true">🛡</span> Passer-garanti
+      Passer-garanti
     </span>
   )
 }
@@ -124,7 +126,7 @@ export const GARANTI_VILKAR =
 
 export function Garantivilkar() {
   return (
-    <Utvid tittel="Vilkår for Passer-garanti" ikon="🛡">
+    <Utvid tittel="Vilkår for Passer-garanti">
       <p className="text-sm">{GARANTI_VILKAR}</p>
       <p className="mt-2 text-xs font-semibold text-varsel">Forslag, avklares med JDD.</p>
     </Utvid>

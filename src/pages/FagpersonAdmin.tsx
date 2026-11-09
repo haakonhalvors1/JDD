@@ -11,7 +11,7 @@ function StatusRegel({ r }: { r: Regel }) {
   return r.status === 'godkjent' ? (
     <span className="etikett border border-ok bg-ok-lys text-ok">✓ Godkjent</span>
   ) : (
-    <span className="etikett border border-varsel bg-varsel-lys text-varsel">✎ Utkast – ikke godkjent</span>
+    <span className="etikett border border-varsel bg-varsel-lys text-varsel">Utkast – ikke godkjent</span>
   )
 }
 
@@ -216,7 +216,7 @@ export function FagpersonAdmin() {
           {avvik.map((p) => (
             <li key={p.id} className={`kort ${lost.includes(p.id) ? 'opacity-70' : 'border-2 border-varsel'}`}>
               <p className="font-semibold">
-                {lost.includes(p.id) ? '✓ Løst: ' : '⚠ Motstridende spesifikasjon: '}
+                {lost.includes(p.id) ? '✓ Løst: ' : 'Motstridende spesifikasjon: '}
                 {p.navn}
               </p>
               <p className="text-sm">Fargetemperatur: <strong>{p.fargetempBeskrivelse}</strong> i beskrivelsen, men <strong>{p.fargetempTeknisk}</strong> i teknisk info.</p>

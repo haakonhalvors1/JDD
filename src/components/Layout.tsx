@@ -84,9 +84,11 @@ function Topp() {
           to="/kurv"
           className="relative ml-auto flex min-h-11 items-center gap-2 rounded-md px-2 font-semibold hover:bg-flate"
         >
-          <span aria-hidden="true" className="text-2xl">
-            🛒
-          </span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 8H6.2" />
+            <circle cx="9" cy="20" r="1.4" />
+            <circle cx="17" cy="20" r="1.4" />
+          </svg>
           <span className="hidden sm:inline">Handlekurv</span>
           <span className="sr-only">, {antall} varer</span>
           {antall > 0 && (

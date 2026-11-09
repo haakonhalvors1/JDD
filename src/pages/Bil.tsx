@@ -115,7 +115,7 @@ export function BilSide() {
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <FagpersonKnapp fra="ukjent_bil" />
             <button type="button" className="knapp-sekundar" disabled>
-              📷 Send bilde av frontlyset (kommer)
+              Send bilde av frontlyset (kommer)
             </button>
           </div>
           <button type="button" className="knapp-lenke mt-2" onClick={() => settLedSvar(null)}>
