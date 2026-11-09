@@ -1,6 +1,4 @@
-// Testlogg: lokalt i localStorage og, når backend er satt opp, også i Supabase (felles for alle enheter).
-// Anonym (T1, T2 …), ingen navn eller e-post (G8).
-import { harBackend, registrerOkt, sendAvslutning, sendHendelse, sendTilbakemelding } from './backend'
+// Testlogg i localStorage (bare på denne enheten). Anonym (T1, T2 …), ingen navn eller e-post (G8).
 
 export type Hendelse =
   | 'landing'
@@ -36,8 +34,6 @@ export interface LoggHendelse {
   navn: Hendelse
   tid: string
   detalj?: string
-  /** Satt når hendelsen er bekreftet lagret i backend (sendekø) */
-  sendt?: boolean
 }
 
 export interface Tilbakemelding {
@@ -49,9 +45,9 @@ export interface Tilbakemelding {
 }
 
 export interface Okt {
-  /** Teknisk ID (UUID) – nøkkel lokalt og i backend */
+  /** Teknisk ID (UUID) for økten */
   uuid: string
-  /** Testperson-ID som vises: T1, T2 … (tildeles av backend når den finnes) */
+  /** Testperson-ID som vises: T1, T2 … */
   id: string
   start: string
   test: boolean
@@ -111,46 +107,6 @@ export function aktivTestperson(): string | null {
   return les().find((o) => o.uuid === id)?.id ?? null
 }
 
-// ---------- Synk mot backend ----------
-// Alle kall går i kø, slik at økten er registrert før hendelsene sendes.
-let ko: Promise<unknown> = Promise.resolve()
-let antallFeil = 0
-export const synkFeil = () => antallFeil
-export const OKT_ENDRET = 'pmb-okt-endret'
-
-function synk(fn: (uuid: string) => Promise<unknown>) {
-  const uuid = aktivOktId()
-  if (!harBackend || !uuid) return
-  ko = ko
-    .then(() => fn(uuid))
-    .catch((e) => {
-      antallFeil++
-      console.warn('Kunne ikke sende til felles logg (lagret lokalt):', e)
-    })
-}
-export const ventPaSynk = () => ko
-
-function registrer(o: Okt) {
-  synk(async (uuid) => {
-    const label = await registrerOkt(uuid, o)
-    if (label && label !== o.id) {
-      skriv(les().map((x) => (x.uuid === uuid ? { ...x, id: label } : x)))
-      window.dispatchEvent(new Event(OKT_ENDRET))
-    }
-  })
-  // Sendekø: hendelser som ikke ble bekreftet sendt (f.eks. siden ble lukket), sendes på nytt
-  for (const h of o.hendelser.filter((x) => !x.sendt)) sendOgMerk(h)
-}
-
-function sendOgMerk(h: LoggHendelse) {
-  synk(async (uuid) => {
-    const { sendt: _ignorert, ...rad } = h
-    void _ignorert
-    await sendHendelse(uuid, rad)
-    oppdater((o) => ({ ...o, hendelser: o.hendelser.map((x) => (x.tid === h.tid && x.navn === h.navn ? { ...x, sendt: true } : x)) }))
-  })
-}
-
 // Innstillingene for økter som opprettes ved første hendelse
 let innstForNyOkt: { test: boolean; oppgave: 1 | 2 | null; variant: 'a' | 'b' } = { test: false, oppgave: null, variant: 'a' }
 
@@ -168,10 +124,7 @@ export function sikreOkt(innst: { test: boolean; oppgave: 1 | 2 | null; variant:
   const okter = les()
   const id = aktivOktId()
   const finnes = id ? okter.find((o) => o.uuid === id) : undefined
-  if (finnes) {
-    registrer(finnes) // idempotent: sikrer at økten finnes i backend etter omlasting
-    return finnes
-  }
+  if (finnes) return finnes
   const uuid = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
   const ny: Okt = { uuid, id: nesteId(okter), start: new Date().toISOString(), hendelser: [], ...innst }
   skriv([...okter, ny])
@@ -180,7 +133,6 @@ export function sikreOkt(innst: { test: boolean; oppgave: 1 | 2 | null; variant:
   } catch {
     /* ignorer */
   }
-  registrer(ny)
   return ny
 }
 
@@ -202,7 +154,6 @@ export function logg(navn: Hendelse, detalj?: string) {
   if (!les().some((o) => o.uuid === aktivOktId())) sikreOkt(innstForNyOkt)
   const h: LoggHendelse = { navn, tid: new Date().toISOString(), detalj }
   oppdater((o) => ({ ...o, hendelser: [...o.hendelser, h] }))
-  sendOgMerk(h)
 }
 
 /** Logger bare første gang i økten (f.eks. landing, pakke_vist) */
@@ -215,12 +166,10 @@ export function loggEnGang(navn: Hendelse, detalj?: string) {
 export function avsluttOppgave(type: 'ferdig' | 'gitt_opp') {
   logg(type === 'ferdig' ? 'oppgave_ferdig' : 'oppgave_gitt_opp')
   oppdater((o) => (o.slutt ? o : { ...o, slutt: { type, tid: new Date().toISOString() } }))
-  synk((uuid) => sendAvslutning(uuid, type))
 }
 
 export function lagreTilbakemelding(t: Tilbakemelding) {
   oppdater((o) => ({ ...o, tilbakemelding: t }))
-  synk((uuid) => sendTilbakemelding(uuid, t))
   logg('tilbakemelding_sendt')
 }
 

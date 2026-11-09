@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { avsluttOppgave, aktivTestperson, OKT_ENDRET } from '../logic/logg'
-import { harBackend } from '../logic/backend'
+import { avsluttOppgave, aktivTestperson } from '../logic/logg'
 import { useApp } from '../state/AppState'
 import { FagpersonPanel } from './FagpersonPanel'
 
@@ -21,12 +20,7 @@ function PrototypeStripe() {
 function TestStripe() {
   const { innst } = useApp()
   const nav = useNavigate()
-  const [person, setPerson] = useState(aktivTestperson)
-  useEffect(() => {
-    const oppdater = () => setPerson(aktivTestperson())
-    window.addEventListener(OKT_ENDRET, oppdater)
-    return () => window.removeEventListener(OKT_ENDRET, oppdater)
-  }, [])
+  const person = aktivTestperson()
   if (!innst.test || !innst.oppgave) return null
   const avslutt = (t: 'ferdig' | 'gitt_opp') => {
     avsluttOppgave(t)
@@ -131,9 +125,7 @@ function Bunn() {
             alle data, varenavn og priser er eksempler.
           </p>
           <p className="mt-2 text-dempet">* Passer-garanti: forslag, avklares med JDD.</p>
-          <p className="mt-2 text-xs text-dempet">
-            Lagring: {harBackend ? 'felles database (anonym testlogg og regler)' : 'bare i denne nettleseren'}
-          </p>
+          <p className="mt-2 text-xs text-dempet">Lagring: alt lagres bare i denne nettleseren.</p>
         </div>
         <nav aria-label="Interne sider">
           <p className="font-bold">Interne sider (prototype)</p>

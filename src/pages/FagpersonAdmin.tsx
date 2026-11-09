@@ -1,5 +1,5 @@
 // K4: Fagperson legger inn, redigerer og godkjenner regler. Kunnskapen blir i JDD.
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { produkter, sporsmal } from '../logic/data'
 import type { Canbus, Frontlys, Krever, Regel } from '../logic/typer'
 import { useApp } from '../state/AppState'
@@ -86,8 +86,7 @@ function RegelSkjema({ start, lagre, avbryt }: { start: Regel; lagre: (r: Regel)
 }
 
 export function FagpersonAdmin() {
-  const { regeldata, lagreRegler, tilbakestillRegler, reglerStatus, hentReglerPaNytt } = useApp()
-  useEffect(() => hentReglerPaNytt(), [hentReglerPaNytt]) // hent siste versjon fra felles database
+  const { regeldata, lagreRegler, tilbakestillRegler } = useApp()
   const regler = regeldata.regler
   const [redigerer, setRedigerer] = useState<string | null>(null)
   const [godkjenner, setGodkjenner] = useState('Fagperson A')
@@ -132,13 +131,8 @@ export function FagpersonAdmin() {
         <p className="etikett mb-2 bg-tekst text-white">Intern side – prototype</p>
         <h1 className="h1">Fagperson: kompatibilitetsregler</h1>
         <p className="mt-1 max-w-3xl text-dempet">
-          Her legger fagpersoner inn hva hver bilmodell trenger. Bare godkjente regler gir «Bekreftet» hos kunden. Slik blir kunnskapen i JDD, også når nøkkelpersoner går av med pensjon.{reglerStatus === 'lokal' ? ' Endringer lagres bare i denne nettleseren (eksempeldata).' : ' Endringer lagres i en felles database, så alle som åpner prototypen ser dem (eksempeldata).'}
+          Her legger fagpersoner inn hva hver bilmodell trenger. Bare godkjente regler gir «Bekreftet» hos kunden. Slik blir kunnskapen i JDD, også når nøkkelpersoner går av med pensjon. Endringer lagres bare i denne nettleseren (eksempeldata).
         </p>
-        {reglerStatus === 'feil' && (
-          <p role="alert" className="mt-2 rounded-md bg-aksent-lys p-2 text-sm font-semibold">
-            ⚠ Fikk ikke kontakt med den felles databasen. Viser eksempeldata. Endringer blir kanskje ikke lagret.
-          </p>
-        )}
       </div>
 
       <div className="flex flex-wrap items-end gap-3">

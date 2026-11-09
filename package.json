@@ -9,11 +9,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "screenshots": "node scripts/screenshots.mjs",
-    "test:backend": "VITE_SUPABASE_URL=http://supabase.test VITE_SUPABASE_PUBLISHABLE_KEY=test vite build --outDir dist-backendtest && node scripts/backend-test.mjs"
+    "screenshots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2"

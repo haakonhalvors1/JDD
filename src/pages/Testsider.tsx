@@ -1,6 +1,5 @@
 // Testlogg (CSV), tilbakemelding og kundesenter-innsikt (K8)
-import { Fragment, useEffect, useMemo, useState } from 'react'
-import { harBackend, hentFellesOkter } from '../logic/backend'
+import { Fragment, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fagpersonSvar } from '../logic/data'
 import {
@@ -29,45 +28,6 @@ const HENDELSE_NAVN: Record<Hendelse, string> = {
   tilbakemelding_sendt: 'Tilbakemelding sendt',
 }
 
-/** Henter økter: fra felles database når den finnes, ellers fra denne nettleseren. */
-function useOkter() {
-  const [okter, setOkter] = useState<Okt[]>(() => (harBackend ? [] : hentOkter()))
-  const [status, setStatus] = useState<'lokal' | 'laster' | 'felles' | 'feil'>(harBackend ? 'laster' : 'lokal')
-  const last = () => {
-    if (!harBackend) return setOkter(hentOkter())
-    setStatus('laster')
-    hentFellesOkter()
-      .then((o) => {
-        setOkter(o ?? [])
-        setStatus('felles')
-      })
-      .catch((e) => {
-        console.warn('Kunne ikke hente felles logg, viser lokal logg:', e)
-        setOkter(hentOkter())
-        setStatus('feil')
-      })
-  }
-  useEffect(last, [])
-  return { okter, setOkter, status, last }
-}
-
-function Kilde({ status, last }: { status: string; last: () => void }) {
-  return (
-    <p className="flex flex-wrap items-center gap-2 text-sm" role="status">
-      <span className="font-semibold">Datakilde:</span>
-      {status === 'lokal' && 'bare denne nettleseren (ingen felles database satt opp)'}
-      {status === 'laster' && 'henter fra felles database …'}
-      {status === 'felles' && 'felles database – alle enheter'}
-      {status === 'feil' && <span className="font-semibold text-aksent">⚠ fikk ikke kontakt med felles database, viser bare denne nettleseren</span>}
-      {status !== 'lokal' && (
-        <button type="button" className="knapp-lenke min-h-9" onClick={last}>
-          Oppdater
-        </button>
-      )}
-    </p>
-  )
-}
-
 function lastNed(innhold: string, filnavn: string) {
   const url = URL.createObjectURL(new Blob([innhold], { type: 'text/csv;charset=utf-8' }))
   const a = document.createElement('a')
@@ -82,7 +42,7 @@ function nyTestLenke(oppgave: 1 | 2, variant: 'a' | 'b') {
 }
 
 export function Testlogg() {
-  const { okter, setOkter, status, last } = useOkter()
+  const [okter, setOkter] = useState<Okt[]>(hentOkter)
   const [apen, setApen] = useState<string | null>(null)
   const startNy = (o: 1 | 2, v: 'a' | 'b') => {
     try {
@@ -98,8 +58,9 @@ export function Testlogg() {
       <div>
         <p className="etikett mb-2 bg-tekst text-white">Intern side – for testleder</p>
         <h1 className="h1">Testlogg</h1>
-        <p className="mt-1 text-dempet">Anonym logg per testperson. Mål: minst to tester før visning for JDD (mål fem).</p>
-        <div className="mt-2"><Kilde status={status} last={last} /></div>
+        <p className="mt-1 text-dempet">
+          Anonym logg per testperson, lagret bare i denne nettleseren. Kjør alle testene på samme enhet, og eksporter CSV etter hver test. Mål: minst to tester før visning for JDD (mål fem).
+        </p>
       </div>
 
       <section aria-labelledby="start" className="kort">
@@ -123,8 +84,7 @@ export function Testlogg() {
         <button
           type="button"
           className="knapp-sekundar"
-          disabled={!okter.length || harBackend}
-          title={harBackend ? 'Felles logg slettes i Supabase-dashbordet' : undefined}
+          disabled={!okter.length}
           onClick={() => {
             if (window.confirm('Slette hele testloggen i denne nettleseren?')) {
               slettLogg()
@@ -134,7 +94,6 @@ export function Testlogg() {
         >
           Slett logg
         </button>
-        {harBackend && <p className="w-full text-xs text-dempet">Den felles loggen kan ikke slettes herfra. Det gjøres i Supabase-dashbordet (Table Editor).</p>}
       </div>
 
       {okter.length === 0 ? (
@@ -282,7 +241,7 @@ export function TilbakemeldingSide() {
 }
 
 export function Innsikt() {
-  const { okter, status, last } = useOkter()
+  const okter = useMemo(hentOkter, [])
   const n = okter.length
   const andel = (k: number) => (n ? `${Math.round((k / n) * 100)} %` : '–')
   const stopp = useMemo(() => {
@@ -313,7 +272,6 @@ export function Innsikt() {
         <p className="etikett mb-2 bg-tekst text-white">Intern side – data fra brukertester, ikke ekte kunder</p>
         <h1 className="h1">Kundesenter: innsikt</h1>
         <p className="mt-1 text-dempet">Hva testerne spurte om og hvor de stoppet. Samme mål som foreslås for gevinstmåling: konvertering, andel komplette ordrer og bruk av fagperson.</p>
-        <div className="mt-2"><Kilde status={status} last={last} /></div>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
