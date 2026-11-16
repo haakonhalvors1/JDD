@@ -21,7 +21,7 @@ export function Forside() {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
             <Garantimerke />
-            <Link to="/passer?modell=1" className="knapp-lenke">Vet ikke regnr? Velg modell</Link>
+            <Link to="/passer?modell=1" className="knapp-sekundar min-h-10 py-2 text-sm">Vet ikke regnr? Velg modell</Link>
           </div>
         </div>
         <Lampe className="mx-auto hidden w-64 md:block" />
