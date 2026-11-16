@@ -1,19 +1,135 @@
 {
-  "_merknad": "EKSEMPELDATA. Fiktive testskilt for simulert regnr-oppslag. Ingen ekte kjøretøydata.",
+  "_merknad": "EKSEMPELDATA. Fiktive testskilt for simulert regnr-oppslag. «populaer» styrer rekkefølgen i «Populære bilmodeller». Modellvelgeren har årsintervall per modell.",
   "kjoretoy": [
-    { "regnr": "PM22022", "merke": "Toyota", "modell": "RAV4", "ar": 2022 },
-    { "regnr": "PM12012", "merke": "Volvo", "modell": "XC70", "ar": 2012 },
-    { "regnr": "PM19019", "merke": "Kia", "modell": "Sportage", "ar": 2019 },
-    { "regnr": "PM17017", "merke": "Volkswagen", "modell": "Golf", "ar": 2018 }
+    {
+      "regnr": "PM22022",
+      "merke": "Toyota",
+      "modell": "RAV4",
+      "ar": 2022,
+      "populaer": 1
+    },
+    {
+      "regnr": "PM12012",
+      "merke": "Volvo",
+      "modell": "XC70",
+      "ar": 2012,
+      "populaer": 2
+    },
+    {
+      "regnr": "PM19019",
+      "merke": "Kia",
+      "modell": "Sportage",
+      "ar": 2019,
+      "populaer": 4
+    },
+    {
+      "regnr": "PM17017",
+      "merke": "Volkswagen",
+      "modell": "Golf",
+      "ar": 2018,
+      "populaer": 3
+    }
   ],
   "modellvelger": [
-    { "merke": "Ford", "modeller": ["Ranger", "Transit"] },
-    { "merke": "Kia", "modeller": ["Sportage", "Ceed"] },
-    { "merke": "Skoda", "modeller": ["Octavia", "Kodiaq"] },
-    { "merke": "Toyota", "modeller": ["RAV4", "Hilux", "Land Cruiser"] },
-    { "merke": "Volkswagen", "modeller": ["Golf", "Amarok"] },
-    { "merke": "Volvo", "modeller": ["XC70", "XC60", "V90"] }
-  ],
-  "arFra": 2005,
-  "arTil": 2025
+    {
+      "merke": "Ford",
+      "modeller": [
+        {
+          "navn": "Ranger",
+          "arFra": 2012,
+          "arTil": 2025
+        },
+        {
+          "navn": "Transit",
+          "arFra": 2014,
+          "arTil": 2025
+        }
+      ]
+    },
+    {
+      "merke": "Kia",
+      "modeller": [
+        {
+          "navn": "Ceed",
+          "arFra": 2012,
+          "arTil": 2025
+        },
+        {
+          "navn": "Sportage",
+          "arFra": 2010,
+          "arTil": 2025
+        }
+      ]
+    },
+    {
+      "merke": "Skoda",
+      "modeller": [
+        {
+          "navn": "Kodiaq",
+          "arFra": 2017,
+          "arTil": 2025
+        },
+        {
+          "navn": "Octavia",
+          "arFra": 2005,
+          "arTil": 2025
+        }
+      ]
+    },
+    {
+      "merke": "Toyota",
+      "modeller": [
+        {
+          "navn": "Hilux",
+          "arFra": 2005,
+          "arTil": 2025
+        },
+        {
+          "navn": "Land Cruiser",
+          "arFra": 2005,
+          "arTil": 2025
+        },
+        {
+          "navn": "RAV4",
+          "arFra": 2006,
+          "arTil": 2025
+        }
+      ]
+    },
+    {
+      "merke": "Volkswagen",
+      "modeller": [
+        {
+          "navn": "Amarok",
+          "arFra": 2010,
+          "arTil": 2025
+        },
+        {
+          "navn": "Golf",
+          "arFra": 2005,
+          "arTil": 2025
+        }
+      ]
+    },
+    {
+      "merke": "Volvo",
+      "modeller": [
+        {
+          "navn": "V90",
+          "arFra": 2016,
+          "arTil": 2025
+        },
+        {
+          "navn": "XC60",
+          "arFra": 2009,
+          "arTil": 2025
+        },
+        {
+          "navn": "XC70",
+          "arFra": 2005,
+          "arTil": 2016
+        }
+      ]
+    }
+  ]
 }

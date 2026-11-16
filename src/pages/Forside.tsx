@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { RegnrSkjema } from '../components/BilSkjema'
+import { PopulaereModeller, RegnrSkjema } from '../components/BilSkjema'
 import { Garantimerke } from '../components/Felles'
 import { Lampe } from '../components/Illustrasjoner'
 import { loggEnGang } from '../logic/logg'
@@ -46,15 +46,7 @@ export function Forside() {
         </ol>
       </section>
 
-      <section aria-labelledby="pop">
-        <h2 id="pop" className="h2 mb-3">Populære bilmodeller</h2>
-        <ul className="flex flex-wrap gap-2">
-          <li><Link to="/ekstralys/toyota-rav4" className="knapp-sekundar min-h-10 py-2 text-sm">Ekstralys til Toyota RAV4</Link></li>
-          {['Volvo XC70', 'VW Golf', 'Kia Sportage'].map((m) => (
-            <li key={m}><Link to="/passer" className="knapp-sekundar min-h-10 py-2 text-sm">Ekstralys til {m}</Link></li>
-          ))}
-        </ul>
-      </section>
+      <PopulaereModeller />
     </div>
   )
 }

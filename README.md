@@ -22,7 +22,11 @@ Kompatibilitet avgjøres **deterministisk** av en regeltabell (`src/data/regler.
 
 ## Testlenker
 
-Mål: minst to brukertester før visningen for JDD (målet fra WBS 4.2 er fem). Åpne hver testperson i en ny fane, eller bruk knappene på `#/testlogg` for å starte en ren økt.
+Mål: minst to brukertester før visningen for JDD (målet fra WBS 4.2 er fem).
+
+**Slik kjører dere en test:** åpne `#/testlogg` → velg variant → **«Start ny testperson»** → **«Start oppgave 1»** (eller 2). Testlinjen vises øverst mens oppgaven pågår. Testpersonen trykker **«Ferdig»** (→ «Takk, oppgaven er fullført») eller **«Gi opp»** (→ «Hvor stoppet det opp?», deretter «Takk for at du prøvde»). Etterpå forsvinner testlinjen for godt, og oppgaven kan ikke startes på nytt for samme testperson. Neste person: «Start ny testperson».
+
+Lenkene under virker også. De oppretter en testperson hvis ingen er aktiv, men starter aldri en oppgave som allerede er avsluttet.
 
 | Hva | Lenke |
 | --- | --- |
@@ -44,7 +48,9 @@ Mål: minst to brukertester før visningen for JDD (målet fra WBS 4.2 er fem). 
 - **Eksporter CSV etter hver test** som sikkerhetskopi. Tømmes nettleserdataene, forsvinner loggen.
 - Vis fagperson-siden og kundeflyten **i samme nettleser** når dere demonstrerer K4 for JDD.
 
-**Logging:** `landing → bil_bekreftet → sporsmal_ferdig → pakke_vist → hvorfor_apnet → ikke_inkludert_apnet → fagperson_apnet → lagt_i_kurv → bestilt`, med tidsstempel. I tillegg logges `veileder_hoppet_over`, `led_besvart`, `fagperson_sporsmal`, Ferdig/Gi opp, variant, tid per oppgave og tilbakemeldingen. Alt er anonymt (T1, T2 …) og lagres bare i nettleserens localStorage. **Eksporter CSV fra samme nettleser som testen ble kjørt i.** CSV-filen bruker semikolon og UTF-8 og åpnes riktig i norsk Excel.
+**Status og CSV:** `#/testlogg` viser status per testperson og oppgave (fullført/avbrutt, tid, hvor det stoppet). CSV-en har én rad per testperson og oppgave med kolonnene `testperson`, `oppgave`, `variant`, `status`, `tid_sekunder`, `stoppet_ved` og `svar`.
+
+**Logging:** `landing → (populaer_modell_valgt) → bil_bekreftet → sporsmal_ferdig → pakke_vist → hvorfor_apnet → ikke_inkludert_apnet → fagperson_apnet → lagt_i_kurv → bestilt`, med tidsstempel. I tillegg logges `veileder_hoppet_over`, `led_besvart`, `fagperson_sporsmal`, `oppgave_startet`, `oppgave_fullfort`, `oppgave_avbrutt`, `avbrudd_besvart`, variant, tid per oppgave og tilbakemeldingen. Alt er anonymt (T1, T2 …) og lagres bare i nettleserens localStorage. **Eksporter CSV fra samme nettleser som testen ble kjørt i.** CSV-filen bruker semikolon og UTF-8 og åpnes riktig i norsk Excel.
 
 ## Skjermoversikt
 
@@ -68,6 +74,8 @@ Mål: minst to brukertester før visningen for JDD (målet fra WBS 4.2 er fem). 
 | Modellvelger / XC70 med kabelsett | `#/passer?modell=1` | K1, A4 | [23](docs/screenshots/mobil-23-modellvelger.png) · [24](docs/screenshots/mobil-24-pakke-xc70-kabelsett.png) | [24](docs/screenshots/desktop-24-pakke-xc70-kabelsett.png) |
 | Variant B | `#/passer/pakke` | test | [25](docs/screenshots/mobil-25-pakke-variant-b-oppgave-2.png) | [25](docs/screenshots/desktop-25-pakke-variant-b-oppgave-2.png) |
 | Fagperson: regler, rediger, datakvalitet | `#/fagperson` | K4 | [26](docs/screenshots/mobil-26-fagperson-regler.png) · [27](docs/screenshots/mobil-27-fagperson-rediger.png) · [28](docs/screenshots/mobil-28-fagperson-datakvalitet.png) | [26](docs/screenshots/desktop-26-fagperson-regler.png) |
+| Populære bilmodeller → utfylt velger + bekreftelse | `#/passer?merke=…` | K1 (AK-1.8–1.13) | [29](docs/screenshots/mobil-29-bilvelger-populaer-rav4.png) · [30](docs/screenshots/mobil-30-bilvelger-populaer-ukjent.png) | – |
+| Testlinje, avbruddsspørsmål, testlogg med status | `#/testlogg`, `#/tilbakemelding` | AK-T1–T6 | [31](docs/screenshots/mobil-31-testlinje.png) · [32](docs/screenshots/mobil-32-avbrudd-sporsmal.png) · [33](docs/screenshots/mobil-33-tilbakemelding-etter-avbrudd.png) · [34](docs/screenshots/mobil-34-testlogg-status.png) | – |
 
 Diagrammer (Mermaid): [sitemap](docs/sitemap.mmd) · [brukerflyt](docs/user-flow.mmd) · [sekvens regnr → pakke](docs/sekvens-regnr-til-pakke.mmd)
 
@@ -101,6 +109,12 @@ npx playwright install chromium
 
 ```bash
 npm run screenshots
+```
+
+Feilrettingstestene (populære bilmodeller og testmodus, mobil 390 px) kjøres mot den samme forhåndsvisningen:
+
+```bash
+npm run test:e2e
 ```
 
 Skriptet lagrer bildene i `docs/screenshots/` og skriver ✔/✘ per akseptansekriterium (sist kjørt: 62/62 OK, 0 alvorlige axe-avvik).

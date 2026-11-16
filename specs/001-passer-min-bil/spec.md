@@ -56,6 +56,14 @@ Formatet er *Gitt / Når / Så*. ID-ene (AK-x.y) brukes i sjekklisten til slutt.
 - **AK-1.6** Pakkesiden viser bare produkter som passer bilen. For RAV4 vises aldri standard kabelsett som en del av pakken.
 - **AK-1.7** «Husk bilen min i Min garasje» er ikke forhåndsavkrysset. Uten avkrysning skrives ikke regnr til localStorage (kan verifiseres i DevTools).
 
+**Populære bilmodeller og bilvelger (lagt til 16.11.2026, feilretting 1)**
+- **AK-1.8** «Populære bilmodeller» genereres fra `src/data/kjoretoy.json` (feltet `populaer` gir rekkefølgen), med Toyota RAV4 2022 først og de andre testbilene etter. Listen er ikke hardkodet i komponenten.
+- **AK-1.9** Trykk på «Toyota RAV4 2022» → merke, modell og år er utfylt i velgeren, og bekreftelsen «Toyota RAV4 2022 – stemmer det?» vises med status Bekreftet, uten flere klikk.
+- **AK-1.10** Trykk på bilen uten godkjent regel i modelltabellen (Kia Sportage 2019) → bekreftelsen viser status Ukjent og spørsmålet «Har bilen LED-frontlys?». Svaret bekrefter bilen og gir Regelutledet.
+- **AK-1.11** Modell-listen avhenger av valgt merke, og år-listen av valgt modell (årsintervall per modell). Bytte av merke nullstiller modell og år. Bytte av modell nullstiller år. Bekreftelsen forsvinner til alle tre er valgt igjen.
+- **AK-1.12** Valget logges som `populaer_modell_valgt` (med bilen som detalj), i tillegg til `bil_bekreftet` når kunden bekrefter.
+- **AK-1.13** Bekreftelsen viser status (Bekreftet/Regelutledet/Ukjent) før kunden svarer, både fra regnr og fra velgeren, og rulles inn i bildet på mobil.
+
 ### K2 (Må) – Pakken har alt som trengs for å fungere
 *Som kunde vil jeg at pakken har alt som trengs for å fungere, slik at jeg slipper en ny tur.*
 
@@ -189,11 +197,19 @@ Fra hvilket som helst steg etter bil-steget: «Spør en fagperson» → panel me
 
 ## 8. Støtte for brukertester
 
-- **Testmodus** `?test=1`: en stripe øverst viser oppgaven, «Ferdig» og «Gi opp», og en anonym ID (T1, T2 …) tildeles. Oppgaver: O1 (standard) og O2 «Finn ut hvorfor reléet er med i pakken, og spør en fagperson om du kan montere selv.» Velges med `?oppgave=1|2`.
+- **Testmodus** (endret 16.11.2026, feilretting 2): testlederen starter testpersoner og oppgaver fra `#/testlogg`. Hver testperson (T1, T2 …) har én tilstand per oppgave: `ikke_startet → pågår → fullført | avbrutt`, lagret i localStorage (`src/logic/testtilstand.ts`, `src/state/TestContext.tsx`). Testlinjen øverst (oppgavetekst, «Ferdig», «Gi opp») vises bare mens en oppgave pågår. Oppgaver: O1 (standard) og O2 «Finn ut hvorfor reléet er med i pakken, og spør en fagperson om du kan montere selv.» Lenker med `?test=1&oppgave=1|2&variant=a|b` virker fortsatt, men starter aldri en avsluttet oppgave på nytt.
 - **Variant** `?variant=a|b`: overskriften over *samme* tilbehør er a = «Trengs for å fungere», b = «Ofte kjøpt sammen». (I variant b heter den egentlige «ofte kjøpt»-seksjonen «Andre kjøpte også». G5 holder fordi seksjonene fortsatt er visuelt adskilte.)
-- **Logging** i localStorage med tidsstempel: `landing`, `bil_bekreftet`, `sporsmal_ferdig`, `veileder_hoppet_over`, `pakke_vist`, `hvorfor_apnet`, `ikke_inkludert_apnet`, `fagperson_apnet`, `fagperson_sporsmal`, `lagt_i_kurv`, `bestilt`, `oppgave_ferdig`, `oppgave_gitt_opp`. Per økt: testperson-ID, oppgave, variant, tid per oppgave og om veilederen ble hoppet over.
-- **`#/testlogg`**: tabell per testperson, CSV-eksport (UTF-8 med BOM, semikolon som skilletegn for norsk Excel) og «Slett logg» med bekreftelse.
-- **`#/tilbakemelding`**: trygghet på at pakken passet (1–5), noe unødvendig (ja/nei + hva), hjelp eller mersalg (1–5) og ett fritekstfelt. Ingen navn eller e-post. Lagres i loggen sammen med testperson-ID.
+- **Logging** i localStorage med tidsstempel: `landing`, `bil_bekreftet`, `sporsmal_ferdig`, `veileder_hoppet_over`, `pakke_vist`, `hvorfor_apnet`, `ikke_inkludert_apnet`, `fagperson_apnet`, `fagperson_sporsmal`, `lagt_i_kurv`, `bestilt`, `populaer_modell_valgt`, `oppgave_startet`, `oppgave_fullfort`, `oppgave_avbrutt`, `avbrudd_besvart`, `tilbakemelding_sendt`. Hver hendelse knyttes til oppgaven som pågikk. Per testperson og oppgave: status, tid brukt, hvor det stoppet og svarene.
+- **`#/testlogg`**: aktiv testperson med status per oppgave og «Start oppgave 1/2», «Start ny testperson» (velg variant) og en tabell per testperson og oppgave (status, tid, stoppet ved, hendelser). CSV-eksport (UTF-8 med BOM, semikolon for norsk Excel) med én rad per testperson og oppgave og kolonnene `testperson`, `oppgave`, `variant`, `status`, `tid_sekunder`, `stoppet_ved`, `svar` (+ hoppet over, fagperson, komplett ordre, hendelsesrekke). «Slett logg» med bekreftelse.
+- **`#/tilbakemelding`**: trygghet på at pakken passet (1–5), noe unødvendig (ja/nei + hva), hjelp eller mersalg (1–5) og ett fritekstfelt. Ingen navn eller e-post. Lagres på oppgaven til testpersonen. Overskriften er «Takk, oppgaven er fullført» etter Ferdig og «Takk for at du prøvde» etter Gi opp.
+
+**Akseptansekriterier for testmodus (lagt til 16.11.2026, feilretting 2)**
+- **AK-T1** Start oppgave fra `#/testlogg` → testlinjen vises med oppgavetekst, «Ferdig» og «Gi opp».
+- **AK-T2** «Ferdig» → `oppgave_fullfort` logges med tid brukt, testlinjen forsvinner med en gang, og testpersonen kommer til tilbakemeldingssiden «Takk, oppgaven er fullført». Status «fullført» i loggen, også etter oppdatering av siden.
+- **AK-T3** «Gi opp» → `oppgave_avbrutt` logges med tid brukt og siste hendelse/side før avbrudd. Testlinjen forsvinner, og testpersonen får spørsmålet «Hvor stoppet det opp?» (fant ikke bilen, usikker på om pakken passet, forsto ikke tilbehøret, pris, annet + fritekst), deretter tilbakemeldingssiden «Takk for at du prøvde». Status «avbrutt» i loggen.
+- **AK-T4** Når en oppgave er fullført eller avbrutt, vises ikke testlinjen igjen, selv om siden lastes på nytt eller `?test=1` står i adressen. `?test=1` fjernes fra adressen når testen avsluttes.
+- **AK-T5** En avsluttet oppgave kan ikke startes på nytt for samme testperson. «Start ny testperson» oppretter neste ID og nullstiller testtilstanden.
+- **AK-T6** Ferdig og Gi opp gir ulike hendelser, ulike skjermer og ulik status i CSV-en.
 - Hendelsene speiler funnelen for gevinstmåling: konvertering (`pakke_vist` → `bestilt`), andel komplette ordrer (bestilt med alle «trengs»-deler) og bruk av fagperson.
 
 ## 9. Utenfor scope
@@ -229,6 +245,7 @@ Fra hvilket som helst steg etter bil-steget: «Spør en fagperson» → panel me
 | K7 | `components/Felles.tsx` (`Garantimerke`, `Garantivilkar`), `pages/Pakke.tsx`, `pages/Kasse.tsx` | Skjermbilder 08, 14 |
 | K8 | `pages/Testsider.tsx` (`Innsikt`), `logic/logg.ts` | `logg.test.ts`, skjermbilde 18 |
 | K9 | `pages/Kasse.tsx` (`BekreftelseSide`), `components/Illustrasjoner.tsx` (`Koblingsskjema`) | Skjermbilde 15 |
-| Test | `components/Layout.tsx` (`TestStripe`), `state/AppState.tsx` (variant), `logic/logg.ts`, `pages/Testsider.tsx` | `logg.test.ts`, logg-sjekker i skriptet |
+| K1 (AK-1.8–1.13) | `logic/bilvelger.ts`, `components/BilSkjema.tsx` (`ModellVelger`, `PopulaereModeller`), `components/BilBekreftelse.tsx`, `pages/Passer.tsx` | `bilvelger.test.ts`, `scripts/e2e-feilretting.mjs` |
+| Test (AK-T1–T6) | `logic/testtilstand.ts`, `state/TestContext.tsx`, `components/Layout.tsx` (`TestStripe`), `logic/logg.ts`, `pages/Testsider.tsx` | `testtilstand.test.ts`, `logg.test.ts`, `scripts/e2e-feilretting.mjs` |
 
 Sjekklisten med ✔/✘ per akseptansekriterium ligger i `docs/sjekkliste.md`.

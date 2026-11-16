@@ -8,6 +8,7 @@ import { sporsmal } from '../logic/data'
 import { logg, loggEnGang } from '../logic/logg'
 import type { Pakke, Resultat, Svar } from '../logic/typer'
 import { overskrifter, useApp } from '../state/AppState'
+import { useTest } from '../state/TestContext'
 
 function svarTekst(svar: Svar) {
   return sporsmal.map((s) => s.valg.find((v) => String(v.verdi) === String(svar[s.id as keyof Svar]))?.tekst).join(' · ')
@@ -151,13 +152,14 @@ function EndreSvar() {
 
 export function PakkeSide() {
   const app = useApp()
-  const { bil, bilBekreftet, resultat, harSvart, hoppetOver, svar, innst, leggTilOfte, kurv } = app
-  const tekster = overskrifter(innst.variant)
+  const { bil, bilBekreftet, resultat, harSvart, hoppetOver, svar, leggTilOfte, kurv } = app
+  const { variant } = useTest()
+  const tekster = overskrifter(variant)
   const [visEndre, setVisEndre] = useState(hoppetOver)
 
   useEffect(() => {
-    if (resultat.pakker) loggEnGang('pakke_vist', innst.variant)
-  }, [resultat.pakker, innst.variant])
+    if (resultat.pakker) loggEnGang('pakke_vist', variant)
+  }, [resultat.pakker, variant])
 
   if (!bil || !bilBekreftet) return <Navigate to="/passer" replace />
   if (resultat.status === 'ukjent' || !resultat.pakker) return <Navigate to="/passer/bil" replace />

@@ -1,7 +1,16 @@
 // Testlogg i localStorage (bare på denne enheten). Anonym (T1, T2 …), ingen navn eller e-post (G8).
+// En «økt» er én testperson (eller én anonym besøkende uten testmodus). Hver testperson har to oppgaver
+// med egen tilstand: ikke_startet → pagar → fullfort | avbrutt (se testtilstand.ts).
+import {
+  erAvsluttet, nyOppgave, overgang, STATUS_TEKST, AVBRUDD_ARSAKER,
+  type AvbruddArsak, type OppgaveTilstand, type TestStatus, type Tilbakemelding,
+} from './testtilstand'
+
+export type { Tilbakemelding } from './testtilstand'
 
 export type Hendelse =
   | 'landing'
+  | 'populaer_modell_valgt'
   | 'bil_bekreftet'
   | 'led_besvart'
   | 'sporsmal_ferdig'
@@ -13,8 +22,10 @@ export type Hendelse =
   | 'fagperson_sporsmal'
   | 'lagt_i_kurv'
   | 'bestilt'
-  | 'oppgave_ferdig'
-  | 'oppgave_gitt_opp'
+  | 'oppgave_startet'
+  | 'oppgave_fullfort'
+  | 'oppgave_avbrutt'
+  | 'avbrudd_besvart'
   | 'tilbakemelding_sendt'
 
 /** Rekkefølgen i funnelen (for #/innsikt) */
@@ -30,41 +41,45 @@ export const FUNNEL: Hendelse[] = [
   'bestilt',
 ]
 
+export type OppgaveNr = 1 | 2
+
 export interface LoggHendelse {
   navn: Hendelse
   tid: string
   detalj?: string
-}
-
-export interface Tilbakemelding {
-  trygghet: number | null
-  unodvendig: 'ja' | 'nei' | null
-  unodvendigHva: string
-  hjelpEllerMersalg: number | null
-  fritekst: string
+  /** Oppgaven som pågikk da hendelsen skjedde */
+  oppgave?: OppgaveNr | null
 }
 
 export interface Okt {
-  /** Teknisk ID (UUID) for økten */
+  /** Teknisk ID (UUID) */
   uuid: string
   /** Testperson-ID som vises: T1, T2 … */
   id: string
   start: string
+  /** true = testperson (startet i testmodus), false = anonym besøkende */
   test: boolean
-  oppgave: 1 | 2 | null
   variant: 'a' | 'b'
+  oppgaver: Record<OppgaveNr, OppgaveTilstand>
   hendelser: LoggHendelse[]
-  slutt?: { type: 'ferdig' | 'gitt_opp'; tid: string }
-  tilbakemelding?: Tilbakemelding
 }
 
 const NOKKEL = 'pmb.logg'
-const OKT_NOKKEL = 'pmb.okt'
+/** Aktiv testperson på denne enheten (localStorage, overlever omlasting og nye faner) */
+const AKTIV_NOKKEL = 'pmb.aktivTestperson'
+/** Anonym økt for besøk uten testmodus (per fane) */
+const ANONYM_NOKKEL = 'pmb.okt'
+
+const tom = (): Record<OppgaveNr, OppgaveTilstand> => ({ 1: nyOppgave(), 2: nyOppgave() })
+const naa = () => new Date().toISOString()
+const nyUuid = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
 
 function les(): Okt[] {
   try {
-    const okter = JSON.parse(localStorage.getItem(NOKKEL) ?? '[]') as Okt[]
-    return okter.map((o) => ({ ...o, uuid: o.uuid ?? o.id }))
+    const okter = JSON.parse(localStorage.getItem(NOKKEL) ?? '[]') as Partial<Okt>[]
+    // Tåler eldre format (før tilstand per oppgave)
+    return okter.map((o) => ({ ...(o as Okt), uuid: o.uuid ?? o.id!, oppgaver: o.oppgaver ?? tom(), hendelser: o.hendelser ?? [] }))
   } catch {
     return []
   }
@@ -76,15 +91,29 @@ function skriv(okter: Okt[]) {
     /* localStorage utilgjengelig – logging hoppes over */
   }
 }
-
-export const hentOkter = les
-export function slettLogg() {
-  skriv([])
+const lesNokkel = (lager: 'local' | 'session', k: string) => {
   try {
-    sessionStorage.removeItem(OKT_NOKKEL)
+    return (lager === 'local' ? localStorage : sessionStorage).getItem(k)
+  } catch {
+    return null
+  }
+}
+const settNokkel = (lager: 'local' | 'session', k: string, v: string | null) => {
+  try {
+    const s = lager === 'local' ? localStorage : sessionStorage
+    if (v === null) s.removeItem(k)
+    else s.setItem(k, v)
   } catch {
     /* ignorer */
   }
+}
+
+export const hentOkter = les
+
+export function slettLogg() {
+  skriv([])
+  settNokkel('local', AKTIV_NOKKEL, null)
+  settNokkel('session', ANONYM_NOKKEL, null)
 }
 
 export function nesteId(okter: Okt[]): string {
@@ -92,99 +121,120 @@ export function nesteId(okter: Okt[]): string {
   return `T${maks + 1}`
 }
 
-/** UUID for økten i denne fanen */
-export function aktivOktId(): string | null {
-  try {
-    return sessionStorage.getItem(OKT_NOKKEL)
-  } catch {
-    return null
-  }
+// ---------- Aktiv økt ----------
+
+/** Aktiv testperson på denne enheten, eller null */
+export function aktivTestperson(): Okt | null {
+  const id = lesNokkel('local', AKTIV_NOKKEL)
+  return (id && les().find((o) => o.uuid === id)) || null
 }
 
-/** Testperson-ID (T1 …) for økten i denne fanen */
-export function aktivTestperson(): string | null {
-  const id = aktivOktId()
-  return les().find((o) => o.uuid === id)?.id ?? null
+/** Økten som hendelser logges til: aktiv testperson, ellers anonym økt for fanen */
+function aktivOktUuid(): string | null {
+  return lesNokkel('local', AKTIV_NOKKEL) ?? lesNokkel('session', ANONYM_NOKKEL)
 }
 
-// Innstillingene for økter som opprettes ved første hendelse
-let innstForNyOkt: { test: boolean; oppgave: 1 | 2 | null; variant: 'a' | 'b' } = { test: false, oppgave: null, variant: 'a' }
-
-/**
- * Ved oppstart: i testmodus opprettes økten med en gang (testlinjen viser T-nummeret).
- * Ellers opprettes den først ved første hendelse, slik at besøk på interne sider ikke gir tomme økter.
- */
-export function startOkt(innst: typeof innstForNyOkt) {
-  innstForNyOkt = innst
-  if (innst.test || aktivOktId()) sikreOkt(innst)
+/** Oppgaven som pågår for en testperson, eller null */
+export function pagaendeOppgave(o: Okt | null): OppgaveNr | null {
+  if (!o) return null
+  return ([1, 2] as const).find((n) => o.oppgaver[n].status === 'pagar') ?? null
 }
 
-/** Henter eller oppretter økten for denne fanen. */
-export function sikreOkt(innst: { test: boolean; oppgave: 1 | 2 | null; variant: 'a' | 'b' }): Okt {
+/** Oppretter neste testperson (T-neste) og gjør den aktiv. Begge oppgavene er ikke_startet. */
+export function nyTestperson(variant: 'a' | 'b'): Okt {
   const okter = les()
-  const id = aktivOktId()
-  const finnes = id ? okter.find((o) => o.uuid === id) : undefined
-  if (finnes) return finnes
-  const uuid = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
-  const ny: Okt = { uuid, id: nesteId(okter), start: new Date().toISOString(), hendelser: [], ...innst }
+  const ny: Okt = { uuid: nyUuid(), id: nesteId(okter), start: naa(), test: true, variant, oppgaver: tom(), hendelser: [] }
   skriv([...okter, ny])
-  try {
-    sessionStorage.setItem(OKT_NOKKEL, uuid)
-  } catch {
-    /* ignorer */
-  }
+  settNokkel('local', AKTIV_NOKKEL, ny.uuid)
+  settNokkel('session', ANONYM_NOKKEL, null)
   return ny
 }
 
-export function nyOkt() {
-  try {
-    sessionStorage.removeItem(OKT_NOKKEL)
-  } catch {
-    /* ignorer */
-  }
+function oppdaterOkt(uuid: string, fn: (o: Okt) => Okt) {
+  skriv(les().map((o) => (o.uuid === uuid ? fn(o) : o)))
 }
 
-function oppdater(fn: (o: Okt) => Okt) {
-  const id = aktivOktId()
-  if (!id) return
-  skriv(les().map((o) => (o.uuid === id ? fn(o) : o)))
+/** Lager en anonym økt (uten testmodus) ved første hendelse, slik at interne sider ikke gir tomme økter. */
+function sikreOkt(): string {
+  const id = aktivOktUuid()
+  if (id && les().some((o) => o.uuid === id)) return id
+  const okter = les()
+  const ny: Okt = { uuid: nyUuid(), id: nesteId(okter), start: naa(), test: false, variant: 'a', oppgaver: tom(), hendelser: [] }
+  skriv([...okter, ny])
+  settNokkel('session', ANONYM_NOKKEL, ny.uuid)
+  return ny.uuid
 }
 
 export function logg(navn: Hendelse, detalj?: string) {
-  if (!les().some((o) => o.uuid === aktivOktId())) sikreOkt(innstForNyOkt)
-  const h: LoggHendelse = { navn, tid: new Date().toISOString(), detalj }
-  oppdater((o) => ({ ...o, hendelser: [...o.hendelser, h] }))
+  const uuid = sikreOkt()
+  oppdaterOkt(uuid, (o) => ({ ...o, hendelser: [...o.hendelser, { navn, tid: naa(), detalj, oppgave: pagaendeOppgave(o) }] }))
 }
 
 /** Logger bare første gang i økten (f.eks. landing, pakke_vist) */
 export function loggEnGang(navn: Hendelse, detalj?: string) {
-  const id = aktivOktId()
+  const id = aktivOktUuid()
   const o = les().find((x) => x.uuid === id)
-  if (!o || !o.hendelser.some((h) => h.navn === navn)) logg(navn, detalj)
+  if (!o || !o.hendelser.some((h) => h.navn === navn && h.oppgave === pagaendeOppgave(o))) logg(navn, detalj)
 }
 
-export function avsluttOppgave(type: 'ferdig' | 'gitt_opp') {
-  logg(type === 'ferdig' ? 'oppgave_ferdig' : 'oppgave_gitt_opp')
-  oppdater((o) => (o.slutt ? o : { ...o, slutt: { type, tid: new Date().toISOString() } }))
+// ---------- Oppgaver (tilstandsmaskin) ----------
+
+/** Starter en oppgave for aktiv testperson. Bare fra ikke_startet, og bare når ingen annen oppgave pågår. */
+export function startOppgave(n: OppgaveNr): boolean {
+  const o = aktivTestperson()
+  if (!o || pagaendeOppgave(o) !== null) return false
+  const { tilstand, endret } = overgang(o.oppgaver[n], { type: 'start', tid: naa() })
+  if (!endret) return false
+  oppdaterOkt(o.uuid, (x) => ({ ...x, oppgaver: { ...x.oppgaver, [n]: tilstand } }))
+  logg('oppgave_startet', String(n))
+  return true
 }
 
-export function lagreTilbakemelding(t: Tilbakemelding) {
-  oppdater((o) => ({ ...o, tilbakemelding: t }))
-  logg('tilbakemelding_sendt')
+function avslutt(type: 'fullfor' | 'avbryt', stoppetVed = ''): OppgaveNr | null {
+  const o = aktivTestperson()
+  const n = pagaendeOppgave(o)
+  if (!o || !n) return null
+  const tid = naa()
+  const h = type === 'fullfor' ? { type, tid } as const : { type, tid, stoppetVed } as const
+  const { tilstand, endret } = overgang(o.oppgaver[n], h)
+  if (!endret) return null
+  // Hendelsen logges før statusen endres, slik at den knyttes til oppgaven
+  logg(type === 'fullfor' ? 'oppgave_fullfort' : 'oppgave_avbrutt', `${tilstand.sekunder ?? 0}s${stoppetVed ? ` · ${stoppetVed}` : ''}`)
+  oppdaterOkt(o.uuid, (x) => ({ ...x, oppgaver: { ...x.oppgaver, [n]: tilstand } }))
+  return n
 }
 
-// ---- Avledede mål (brukes i #/testlogg, #/innsikt og CSV) ----
+/** Ferdig: pagar → fullfort */
+export const fullforOppgave = () => avslutt('fullfor')
 
-export function sekunderPaOppgave(o: Okt): number | null {
-  const forste = o.hendelser[0]?.tid
-  const slutt = o.slutt?.tid ?? o.hendelser.find((h) => h.navn === 'bestilt')?.tid
-  if (!forste || !slutt) return null
-  return Math.round((Date.parse(slutt) - Date.parse(forste)) / 1000)
+/** Gi opp: pagar → avbrutt, med siste hendelse og side før avbrudd */
+export function avbrytOppgave(side: string): OppgaveNr | null {
+  const o = aktivTestperson()
+  const siste = o?.hendelser.filter((h) => h.oppgave === pagaendeOppgave(o)).at(-1)?.navn ?? 'ingen hendelser'
+  return avslutt('avbryt', `${siste} @ ${side}`)
 }
+
+export function lagreAvbruddArsak(n: OppgaveNr, arsak: AvbruddArsak, fritekst: string) {
+  const o = aktivTestperson()
+  if (!o || o.oppgaver[n].status !== 'avbrutt') return
+  oppdaterOkt(o.uuid, (x) => ({ ...x, oppgaver: { ...x.oppgaver, [n]: { ...x.oppgaver[n], arsak, arsakFritekst: fritekst } } }))
+  logg('avbrudd_besvart', arsak)
+}
+
+export function lagreTilbakemelding(n: OppgaveNr | null, t: Tilbakemelding) {
+  const o = aktivTestperson()
+  if (o && n && erAvsluttet(o.oppgaver[n])) {
+    oppdaterOkt(o.uuid, (x) => ({ ...x, oppgaver: { ...x.oppgaver, [n]: { ...x.oppgaver[n], tilbakemelding: t } } }))
+  }
+  logg('tilbakemelding_sendt', n ? String(n) : undefined)
+}
+
+// ---------- Avledede mål (brukes i #/testlogg, #/innsikt og CSV) ----------
 
 export const hoppetOver = (o: Okt) => o.hendelser.some((h) => h.navn === 'veileder_hoppet_over')
 export const har = (o: Okt, h: Hendelse) => o.hendelser.some((x) => x.navn === h)
 export const komplettOrdre = (o: Okt) => o.hendelser.some((h) => h.navn === 'bestilt' && h.detalj === 'komplett')
+export const harAvbrutt = (o: Okt) => o.oppgaver[1].status === 'avbrutt' || o.oppgaver[2].status === 'avbrutt'
 
 /** Siste steg i funnelen personen nådde */
 export function stoppetVed(o: Okt): Hendelse | null {
@@ -192,28 +242,85 @@ export function stoppetVed(o: Okt): Hendelse | null {
   return nadd.length ? nadd[nadd.length - 1] : null
 }
 
-const csvCelle = (v: unknown) => {
-  const s = v === null || v === undefined ? '' : String(v)
-  return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+export interface OppgaveRad {
+  okt: Okt
+  testperson: string
+  oppgave: OppgaveNr | null
+  variant: 'a' | 'b'
+  status: TestStatus
+  tidSekunder: number | null
+  stoppetVed: string
+  svar: string
+  hendelser: LoggHendelse[]
 }
 
-/** CSV med semikolon og BOM (åpnes riktig i norsk Excel). Én rad per hendelse. */
+function svarTekst(t: OppgaveTilstand): string {
+  const deler: string[] = []
+  if (t.arsak) deler.push(`stoppet: ${AVBRUDD_ARSAKER.find((a) => a.verdi === t.arsak)?.tekst ?? t.arsak}${t.arsakFritekst ? ` (${t.arsakFritekst})` : ''}`)
+  const tb = t.tilbakemelding
+  if (tb) {
+    if (tb.trygghet) deler.push(`trygghet ${tb.trygghet}/5`)
+    if (tb.unodvendig) deler.push(`unødvendig: ${tb.unodvendig}${tb.unodvendigHva ? ` (${tb.unodvendigHva})` : ''}`)
+    if (tb.hjelpEllerMersalg) deler.push(`hjelp vs. mersalg ${tb.hjelpEllerMersalg}/5`)
+    if (tb.fritekst) deler.push(`«${tb.fritekst}»`)
+  }
+  return deler.join(' · ')
+}
+
+/** Én rad per testperson og startet oppgave. Anonyme økter med hendelser får én rad uten oppgave. */
+export function oppgaveRader(okter: Okt[]): OppgaveRad[] {
+  return okter.flatMap((o): OppgaveRad[] => {
+    const startet = ([1, 2] as const).filter((n) => o.oppgaver[n].status !== 'ikke_startet')
+    if (!startet.length) {
+      return o.hendelser.length
+        ? [{ okt: o, testperson: o.id, oppgave: null, variant: o.variant, status: 'ikke_startet' as const, tidSekunder: null, stoppetVed: stoppetVed(o) ?? '', svar: '', hendelser: o.hendelser }]
+        : []
+    }
+    return startet.map((n) => {
+      const t = o.oppgaver[n]
+      const hendelser = o.hendelser.filter((h) => h.oppgave === n)
+      const funnel = FUNNEL.filter((f) => hendelser.some((h) => h.navn === f)).at(-1) ?? ''
+      return {
+        okt: o,
+        testperson: o.id,
+        oppgave: n,
+        variant: o.variant,
+        status: t.status,
+        tidSekunder: t.sekunder ?? null,
+        stoppetVed: t.status === 'avbrutt' ? (t.stoppetVed ?? '') : funnel,
+        svar: svarTekst(t),
+        hendelser,
+      }
+    })
+  })
+}
+
+const csvCelle = (v: unknown) => {
+  const s = v === null || v === undefined ? '' : String(v)
+  return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+
+/**
+ * CSV med semikolon og BOM (åpnes riktig i norsk Excel). Én rad per testperson og oppgave.
+ * Kolonnene: testperson, oppgave, variant, status, tid_sekunder, stoppet_ved, svar + nøkkeltall og hendelsesrekke.
+ */
 export function tilCsv(okter: Okt[]): string {
   const hode = [
-    'testperson', 'oppgave', 'variant', 'testmodus', 'hendelse', 'detalj', 'tidspunkt', 'sek_fra_start',
-    'veileder_hoppet_over', 'oppgave_slutt', 'sek_pa_oppgave', 'komplett_ordre',
-    'trygghet_1_5', 'unodvendig', 'unodvendig_hva', 'hjelp_mersalg_1_5', 'fritekst',
+    'testperson', 'oppgave', 'variant', 'status', 'tid_sekunder', 'stoppet_ved', 'svar',
+    'veileder_hoppet_over', 'brukte_fagperson', 'komplett_ordre', 'hendelser',
   ]
-  const rader = okter.flatMap((o) => {
-    const t0 = Date.parse(o.hendelser[0]?.tid ?? o.start)
-    const felles = (h?: LoggHendelse) => [
-      o.id, o.oppgave ?? '', o.variant, o.test ? 'ja' : 'nei', h?.navn ?? '', h?.detalj ?? '', h?.tid ?? '',
-      h ? Math.round((Date.parse(h.tid) - t0) / 1000) : '',
-      hoppetOver(o) ? 'ja' : 'nei', o.slutt?.type ?? '', sekunderPaOppgave(o) ?? '', komplettOrdre(o) ? 'ja' : 'nei',
-      o.tilbakemelding?.trygghet ?? '', o.tilbakemelding?.unodvendig ?? '', o.tilbakemelding?.unodvendigHva ?? '',
-      o.tilbakemelding?.hjelpEllerMersalg ?? '', o.tilbakemelding?.fritekst ?? '',
-    ]
-    return o.hendelser.length ? o.hendelser.map(felles) : [felles()]
-  })
+  const rader = oppgaveRader(okter).map((r) => [
+    r.testperson,
+    r.oppgave ?? '',
+    r.variant,
+    STATUS_TEKST[r.status],
+    r.tidSekunder ?? '',
+    r.stoppetVed,
+    r.svar,
+    r.hendelser.some((h) => h.navn === 'veileder_hoppet_over') ? 'ja' : 'nei',
+    r.hendelser.some((h) => h.navn === 'fagperson_apnet') ? 'ja' : 'nei',
+    r.hendelser.some((h) => h.navn === 'bestilt' && h.detalj === 'komplett') ? 'ja' : 'nei',
+    r.hendelser.map((h) => h.navn).join(' > '),
+  ])
   return '﻿' + [hode, ...rader].map((r) => r.map(csvCelle).join(';')).join('\r\n')
 }

@@ -5,7 +5,8 @@ import { Brodsmuler, FagpersonKnapp, Garantimerke, Garantivilkar, Pris, StatusMe
 import { Koblingsskjema, ProduktBilde } from '../components/Illustrasjoner'
 import { kr } from '../logic/anbefal'
 import { produkter } from '../logic/data'
-import { avsluttOppgave, logg } from '../logic/logg'
+import { logg } from '../logic/logg'
+import { useTest } from '../state/TestContext'
 import { visRegnr } from '../logic/regnr'
 import { useApp } from '../state/AppState'
 
@@ -197,7 +198,8 @@ export function KasseSide() {
 }
 
 export function BekreftelseSide() {
-  const { innst, garasje, glemGarasje, tomKurv } = useApp()
+  const { garasje, glemGarasje, tomKurv } = useApp()
+  const { aktivOppgave, fullfor } = useTest()
   const nav = useNavigate()
   // Kurven tømmes først her, slik at kassen ikke rendres tom før navigasjonen
   useEffect(() => tomKurv(), [tomKurv])
@@ -276,12 +278,12 @@ export function BekreftelseSide() {
         </p>
       )}
 
-      {innst.test && (
+      {aktivOppgave && (
         <button
           type="button"
           className="knapp-primar w-full"
           onClick={() => {
-            avsluttOppgave('ferdig')
+            fullfor()
             nav('/tilbakemelding')
           }}
         >

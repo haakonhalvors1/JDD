@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { avsluttOppgave, aktivTestperson } from '../logic/logg'
+import { useTest } from '../state/TestContext'
 import { useApp } from '../state/AppState'
 import { FagpersonPanel } from './FagpersonPanel'
 
@@ -18,28 +18,39 @@ function PrototypeStripe() {
 }
 
 function TestStripe() {
-  const { innst } = useApp()
+  const { aktivOppgave, testperson, variant, fullfor, avbryt } = useTest()
   const nav = useNavigate()
-  const person = aktivTestperson()
-  if (!innst.test || !innst.oppgave) return null
-  const avslutt = (t: 'ferdig' | 'gitt_opp') => {
-    avsluttOppgave(t)
-    nav('/tilbakemelding')
-  }
+  const { pathname } = useLocation()
+  // Vises bare mens en oppgave pågår. Etter Ferdig/Gi opp forsvinner den, også etter omlasting.
+  if (!aktivOppgave || !testperson) return null
   return (
     <section aria-label="Testoppgave" className="border-b-2 border-info bg-info-lys px-4 py-2">
       <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center">
         <p className="flex-1 text-sm">
           <span className="font-bold">
-            Oppgave {innst.oppgave} ({person ?? '–'}, variant {innst.variant.toUpperCase()}):
+            Oppgave {aktivOppgave} ({testperson.id}, variant {variant.toUpperCase()}):
           </span>{' '}
-          {OPPGAVER[innst.oppgave]}
+          {OPPGAVER[aktivOppgave]}
         </p>
         <div className="flex gap-2">
-          <button type="button" className="knapp min-h-9 bg-info py-1.5 text-sm text-white" onClick={() => avslutt('ferdig')}>
+          <button
+            type="button"
+            className="knapp min-h-9 bg-info py-1.5 text-sm text-white"
+            onClick={() => {
+              fullfor()
+              nav('/tilbakemelding')
+            }}
+          >
             Ferdig
           </button>
-          <button type="button" className="knapp min-h-9 border-2 border-info bg-white py-1.5 text-sm text-info" onClick={() => avslutt('gitt_opp')}>
+          <button
+            type="button"
+            className="knapp min-h-9 border-2 border-info bg-white py-1.5 text-sm text-info"
+            onClick={() => {
+              avbryt(pathname)
+              nav('/tilbakemelding')
+            }}
+          >
             Gi opp
           </button>
         </div>

@@ -1,7 +1,9 @@
 // K1: oppgi regnr eller merke/modell/år
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { arsintervall, kjoretoy, modellvelger } from '../logic/data'
+import { kjoretoy } from '../logic/data'
+import { arFor, merker, modellerFor, populaereModeller, type Velger, type VelgerHandling } from '../logic/bilvelger'
+import { logg } from '../logic/logg'
 import { erGyldigRegnr, slaOppRegnr, visRegnr } from '../logic/regnr'
 import { useApp } from '../state/AppState'
 import { FagpersonKnapp } from './Felles'
@@ -100,49 +102,62 @@ export function RegnrSkjema({ autofokus, kompakt }: { autofokus?: boolean; kompa
   )
 }
 
-export function ModellVelger() {
-  const { settBil } = useApp()
-  const nav = useNavigate()
-  const [merke, setMerke] = useState('')
-  const [modell, setModell] = useState('')
-  const [ar, setAr] = useState('')
-  const modeller = modellvelger.find((m) => m.merke === merke)?.modeller ?? []
-  const ar_ = Array.from({ length: arsintervall.til - arsintervall.fra + 1 }, (_, i) => arsintervall.til - i)
-
+/** K1: Merke → modell → år. Kontrollert av forelderen (useReducer med velgerReducer). */
+export function ModellVelger({ velger, endre }: { velger: Velger; endre: (h: VelgerHandling) => void }) {
+  const modeller = modellerFor(velger.merke)
+  const ar = arFor(velger.merke, velger.modell)
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        if (!merke || !modell || !ar) return
-        settBil({ merke, modell, ar: Number(ar) })
-        nav('/passer/bil')
-      }}
-      className="grid gap-3 sm:grid-cols-3"
-    >
+    <div className="grid gap-3 sm:grid-cols-3">
       <div>
         <label htmlFor="merke" className="mb-1 block font-semibold">Merke</label>
-        <select id="merke" className="felt" value={merke} onChange={(e) => { setMerke(e.target.value); setModell('') }}>
+        <select id="merke" className="felt" value={velger.merke} onChange={(e) => endre({ type: 'merke', verdi: e.target.value })}>
           <option value="">Velg merke</option>
-          {modellvelger.map((m) => <option key={m.merke}>{m.merke}</option>)}
+          {merker().map((m) => <option key={m}>{m}</option>)}
         </select>
       </div>
       <div>
         <label htmlFor="modell" className="mb-1 block font-semibold">Modell</label>
-        <select id="modell" className="felt" value={modell} disabled={!merke} onChange={(e) => setModell(e.target.value)}>
+        <select id="modell" className="felt" value={velger.modell} disabled={!velger.merke} onChange={(e) => endre({ type: 'modell', verdi: e.target.value })}>
           <option value="">Velg modell</option>
           {modeller.map((m) => <option key={m}>{m}</option>)}
         </select>
       </div>
       <div>
         <label htmlFor="ar" className="mb-1 block font-semibold">Årsmodell</label>
-        <select id="ar" className="felt" value={ar} disabled={!modell} onChange={(e) => setAr(e.target.value)}>
+        <select id="ar" className="felt" value={velger.ar} disabled={!velger.modell} onChange={(e) => endre({ type: 'ar', verdi: e.target.value })}>
           <option value="">Velg år</option>
-          {ar_.map((a) => <option key={a}>{a}</option>)}
+          {ar.map((a) => <option key={a}>{a}</option>)}
         </select>
       </div>
-      <button type="submit" className="knapp-primar sm:col-span-3 sm:justify-self-start" disabled={!merke || !modell || !ar}>
-        Velg denne bilen
-      </button>
-    </form>
+    </div>
+  )
+}
+
+/** «Populære bilmodeller», generert fra kjoretoy.json. Et trykk fyller ut velgeren på #/passer. */
+export function PopulaereModeller({ tittelNiva = 'h2' }: { tittelNiva?: 'h2' | 'h3' }) {
+  const nav = useNavigate()
+  const Tittel = tittelNiva
+  return (
+    <section aria-labelledby="populaere">
+      <Tittel id="populaere" className={tittelNiva === 'h2' ? 'h2 mb-3' : 'h3 mb-2'}>
+        Populære bilmodeller
+      </Tittel>
+      <ul className="flex flex-wrap gap-2">
+        {populaereModeller().map((p) => (
+          <li key={p.tekst}>
+            <button
+              type="button"
+              className="knapp-sekundar min-h-10 py-2 text-sm"
+              onClick={() => {
+                logg('populaer_modell_valgt', p.tekst)
+                nav(`/passer?${new URLSearchParams({ merke: p.merke, modell: p.modell, ar: String(p.ar) })}`)
+              }}
+            >
+              {p.tekst}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }

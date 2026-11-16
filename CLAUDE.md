@@ -21,7 +21,8 @@ Les `docs/governance/constitution.md` før du endrer noe. Den går foran alt ann
 
 ## Teknikk
 - Vite + React + TypeScript + Tailwind, `HashRouter` (GitHub Pages). Ingen backend. Tilstand i minnet og localStorage.
-- Tester: Vitest (`src/logic/*.test.ts`). Skjermbilder og akseptsjekker: Playwright + axe (`scripts/screenshots.mjs`, krever `npx vite preview --port 4173`).
+- Tester: Vitest (`src/logic/*.test.ts`, inkl. `testtilstand.test.ts` og `bilvelger.test.ts`).
+- Testmodus: én tilstand per testperson og oppgave (`ikke_startet → pagar → fullfort | avbrutt`) i `src/logic/testtilstand.ts` og `src/state/TestContext.tsx`. Testlinjen vises bare når en oppgave pågår. Skjermbilder og akseptsjekker: Playwright + axe (`scripts/screenshots.mjs`, krever `npx vite preview --port 4173`).
 - Deploy: GitHub Actions → GitHub Pages.
 
 ## Kommandoer
@@ -30,7 +31,8 @@ npm install
 npm run dev        # utviklingsserver
 npm test           # Vitest én gang
 npm run build      # typesjekk + produksjonsbygg
-npm run screenshots
+npm run screenshots  # akseptsjekker + skjermbilder (krever preview på 4173)
+npm run test:e2e     # feilretting 16.11: populære modeller og testmodus, mobil 390 px
 ```
 
 ## Arbeidsflyt

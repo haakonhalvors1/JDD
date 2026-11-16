@@ -112,7 +112,7 @@
     {
       "navn": "AK-1.7 Regnr ikke lagret uten samtykke",
       "ok": true,
-      "detalj": "pmb.logg"
+      "detalj": "pmb.logg,pmb.aktivTestperson"
     },
     {
       "navn": "Logg: Landing",
@@ -287,7 +287,7 @@
     {
       "navn": "AK-1.7 Regnr ikke lagret uten samtykke",
       "ok": true,
-      "detalj": "pmb.logg"
+      "detalj": "pmb.logg,pmb.aktivTestperson"
     },
     {
       "navn": "G2 Kia vises som Ukjent, ikke Bekreftet",

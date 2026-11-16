@@ -1,38 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { anbefal } from '../logic/anbefal'
 import { produkter, standardRegeldata, standardsvar } from '../logic/data'
-import { logg, startOkt } from '../logic/logg'
+import { logg } from '../logic/logg'
 import type { Bil, LedSvar, Regel, Regeldata, Resultat, Svar } from '../logic/typer'
-
-// ---------- Testinnstillinger fra URL (?test=1&variant=b&oppgave=2) ----------
-export interface Innstillinger {
-  test: boolean
-  variant: 'a' | 'b'
-  oppgave: 1 | 2 | null
-}
-
-function lesInnstillinger(): Innstillinger {
-  // Støtter parametre både før og etter # (…/?test=1#/ og …/#/?test=1)
-  const fraHash = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : ''
-  const p = new URLSearchParams(window.location.search + '&' + fraHash)
-  let lagret: Partial<Innstillinger> = {}
-  try {
-    lagret = JSON.parse(sessionStorage.getItem('pmb.innst') ?? '{}')
-  } catch {
-    /* ignorer */
-  }
-  const test = p.has('test') ? p.get('test') === '1' : (lagret.test ?? false)
-  const variant = p.get('variant') === 'b' ? 'b' : p.get('variant') === 'a' ? 'a' : (lagret.variant ?? 'a')
-  const oppg = p.get('oppgave')
-  const oppgave = oppg === '2' ? 2 : oppg === '1' ? 1 : (lagret.oppgave ?? (test ? 1 : null))
-  const innst: Innstillinger = { test, variant, oppgave }
-  try {
-    sessionStorage.setItem('pmb.innst', JSON.stringify(innst))
-  } catch {
-    /* ignorer */
-  }
-  return innst
-}
 
 // ---------- Kurv ----------
 export interface KurvLinje {
@@ -97,7 +67,6 @@ export interface Garasje {
 }
 
 interface Ctx extends Tilstand {
-  innst: Innstillinger
   regeldata: Regeldata
   resultat: Resultat
   garasje: Garasje | null
@@ -123,12 +92,6 @@ interface Ctx extends Tilstand {
 const AppCtx = createContext<Ctx | null>(null)
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  // Økten opprettes før barna logger (f.eks. «landing»)
-  const [innst] = useState(() => {
-    const i = lesInnstillinger()
-    startOkt(i)
-    return i
-  })
   const [t, setT] = useState<Tilstand>(lesTilstand)
   const [regeldata, setRegeldata] = useState<Regeldata>(lesRegeldata)
   const [fagpersonApen, setFagpersonApen] = useState(false)
@@ -265,7 +228,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const verdi: Ctx = {
     ...t,
-    innst,
     regeldata,
     resultat,
     garasje,

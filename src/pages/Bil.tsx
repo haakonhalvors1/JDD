@@ -1,13 +1,12 @@
 // Bekreft bil + modelltabell + Ukjent-flyt (K1, G2, A1, A5)
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Brodsmuler, Fagord, FagpersonKnapp, StatusMerke } from '../components/Felles'
-import { Frontlys } from '../components/Illustrasjoner'
+import { BilBekreftelse, LedSporsmal } from '../components/BilBekreftelse'
 import { produkter } from '../logic/data'
-import { visRegnr } from '../logic/regnr'
 import { useApp } from '../state/AppState'
 
 export function BilSide() {
-  const { bil, bilBekreftet, bekreftBil, settBil, resultat, ledSvar, settLedSvar } = useApp()
+  const { bil, bilBekreftet, settBil, resultat, ledSvar, settLedSvar } = useApp()
   const nav = useNavigate()
   if (!bil) return <Navigate to="/passer" replace />
 
@@ -17,25 +16,12 @@ export function BilSide() {
     return (
       <div className="mx-auto max-w-2xl">
         <Brodsmuler steg={1} />
-        <div className="kort">
-          {bil.regnr && <p className="text-sm text-dempet">Registreringsnummer {visRegnr(bil.regnr)}</p>}
-          <h1 className="h1 mt-1">{bilnavn} – stemmer det?</h1>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <button type="button" className="knapp-primar" onClick={bekreftBil}>
-              Ja, det er bilen min
-            </button>
-            <button
-              type="button"
-              className="knapp-sekundar"
-              onClick={() => {
-                settBil(null)
-                nav('/passer')
-              }}
-            >
-              Nei, velg en annen bil
-            </button>
-          </div>
-        </div>
+        <BilBekreftelse
+          vedNei={() => {
+            settBil(null)
+            nav('/passer')
+          }}
+        />
       </div>
     )
   }
@@ -81,28 +67,9 @@ export function BilSide() {
 
       {/* Ukjent: spør med bilde (A1). Ukjent vises aldri som bekreftet (G2). */}
       {resultat.status === 'ukjent' && resultat.nesteSteg === 'spor_led' && (
-        <section aria-labelledby="led" className="kort border-2 border-varsel">
+        <section aria-label="Spørsmål om frontlys" className="kort border-2 border-varsel">
           <p className="mb-3 text-sm">{resultat.begrunnelse} Svar på ett spørsmål, så finner vi ut hva som trengs.</p>
-          <fieldset>
-            <legend id="led" className="h2 mb-3">Har bilen LED-frontlys?</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {(
-                [
-                  ['ja', 'Ja, LED', 'Smale lysstriper eller flere små, hvite lysflater', 'LED'],
-                  ['nei', 'Nei, halogen', 'Én stor, rund reflektor med gulaktig pære', 'halogen'],
-                ] as const
-              ).map(([v, t, b, type]) => (
-                <button key={v} type="button" onClick={() => settLedSvar(v)} className="kort text-left hover:border-aksent focus-visible:border-aksent">
-                  <Frontlys type={type} className="mb-2 w-full" tittel={`Illustrasjon av ${type === 'LED' ? 'LED-frontlys' : 'halogen-frontlys'}`} />
-                  <span className="block font-bold">{t}</span>
-                  <span className="block text-sm text-dempet">{b}</span>
-                </button>
-              ))}
-            </div>
-            <button type="button" className="knapp-sekundar mt-3 w-full" onClick={() => settLedSvar('vet_ikke')}>
-              Vet ikke
-            </button>
-          </fieldset>
+          <LedSporsmal vedSvar={settLedSvar} />
         </section>
       )}
 

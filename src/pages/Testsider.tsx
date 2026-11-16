@@ -1,17 +1,22 @@
-// Testlogg (CSV), tilbakemelding og kundesenter-innsikt (K8)
+// Testlogg (CSV), tilbakemelding (med avbruddsspørsmål) og kundesenter-innsikt (K8)
 import { Fragment, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { fagpersonSvar } from '../logic/data'
 import {
-  FUNNEL, har, hentOkter, hoppetOver, komplettOrdre, lagreTilbakemelding, sekunderPaOppgave, slettLogg, stoppetVed, tilCsv,
-  type Hendelse, type Okt, type Tilbakemelding,
+  FUNNEL, har, harAvbrutt, hentOkter, hoppetOver, komplettOrdre, lagreAvbruddArsak, lagreTilbakemelding, oppgaveRader,
+  slettLogg, stoppetVed, tilCsv, type Hendelse, type Okt, type OppgaveNr,
 } from '../logic/logg'
+import { AVBRUDD_ARSAKER, STATUS_TEKST, type AvbruddArsak, type TestStatus, type Tilbakemelding } from '../logic/testtilstand'
+import { OPPGAVER } from '../components/Layout'
+import { useApp } from '../state/AppState'
+import { useTest } from '../state/TestContext'
 
 const tid = (iso: string) => new Date(iso).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-const varighet = (s: number | null) => (s === null ? '–' : `${Math.floor(s / 60)} min ${s % 60} s`)
+const varighet = (s: number | null | undefined) => (s === null || s === undefined ? '–' : `${Math.floor(s / 60)} min ${s % 60} s`)
 
 const HENDELSE_NAVN: Record<Hendelse, string> = {
   landing: 'Landing',
+  populaer_modell_valgt: 'Valgte populær modell',
   bil_bekreftet: 'Bil bekreftet',
   led_besvart: 'Svarte på LED-spørsmål',
   sporsmal_ferdig: 'Spørsmål ferdig',
@@ -23,8 +28,10 @@ const HENDELSE_NAVN: Record<Hendelse, string> = {
   fagperson_sporsmal: 'Spørsmål til fagperson',
   lagt_i_kurv: 'Lagt i kurv',
   bestilt: 'Bestilt',
-  oppgave_ferdig: 'Oppgave ferdig',
-  oppgave_gitt_opp: 'Ga opp',
+  oppgave_startet: 'Oppgave startet',
+  oppgave_fullfort: 'Oppgave fullført',
+  oppgave_avbrutt: 'Oppgave avbrutt',
+  avbrudd_besvart: 'Svarte på «Hvor stoppet det opp?»',
   tilbakemelding_sendt: 'Tilbakemelding sendt',
 }
 
@@ -37,20 +44,39 @@ function lastNed(innhold: string, filnavn: string) {
   URL.revokeObjectURL(url)
 }
 
-function nyTestLenke(oppgave: 1 | 2, variant: 'a' | 'b') {
-  return `${window.location.pathname}?test=1&oppgave=${oppgave}&variant=${variant}#/ekstralys/toyota-rav4`
+function StatusEtikett({ status }: { status: TestStatus }) {
+  const kl = {
+    ikke_startet: 'bg-flate text-dempet border-linje',
+    pagar: 'bg-info-lys text-info border-info',
+    fullfort: 'bg-ok-lys text-ok border-ok',
+    avbrutt: 'bg-varsel-lys text-varsel border-varsel',
+  }[status]
+  return <span className={`etikett border ${kl}`}>{STATUS_TEKST[status]}</span>
 }
 
 export function Testlogg() {
+  const { testperson, aktivOppgave, startOppgave, nyTestperson, oppdater } = useTest()
+  const { nullstill } = useApp()
+  const nav = useNavigate()
   const [okter, setOkter] = useState<Okt[]>(hentOkter)
   const [apen, setApen] = useState<string | null>(null)
-  const startNy = (o: 1 | 2, v: 'a' | 'b') => {
+  const [nyVariant, setNyVariant] = useState<'a' | 'b'>(testperson?.variant === 'a' ? 'b' : 'a')
+  const rader = oppgaveRader(okter)
+
+  const nullstillApp = () => {
+    nullstill()
     try {
-      sessionStorage.clear()
+      sessionStorage.removeItem('pmb.ordre')
     } catch {
       /* ignorer */
     }
-    window.location.href = nyTestLenke(o, v)
+  }
+
+  const start = (n: OppgaveNr) => {
+    if (startOppgave(n)) {
+      nullstillApp()
+      nav('/ekstralys/toyota-rav4')
+    }
   }
 
   return (
@@ -63,22 +89,77 @@ export function Testlogg() {
         </p>
       </div>
 
-      <section aria-labelledby="start" className="kort">
-        <h2 id="start" className="h3 mb-2">Start ny testperson (ny ID, ren økt)</h2>
-        <div className="flex flex-wrap gap-2">
-          {([1, 2] as const).flatMap((o) =>
-            (['a', 'b'] as const).map((v) => (
-              <button key={`${o}${v}`} type="button" className="knapp-sekundar min-h-10 py-2 text-sm" onClick={() => startNy(o, v)}>
-                Oppgave {o}, variant {v.toUpperCase()}
-              </button>
-            )),
-          )}
+      <section aria-labelledby="aktiv" className="kort space-y-3">
+        <h2 id="aktiv" className="h3">
+          {testperson ? `Aktiv testperson: ${testperson.id} (variant ${testperson.variant.toUpperCase()})` : 'Ingen aktiv testperson'}
+        </h2>
+        {testperson && (
+          <ul className="space-y-2">
+            {([1, 2] as const).map((n) => {
+              const t = testperson.oppgaver[n]
+              const kanStarte = t.status === 'ikke_startet' && aktivOppgave === null
+              return (
+                <li key={n} className="flex flex-col gap-2 rounded-md bg-flate p-3 sm:flex-row sm:items-center">
+                  <div className="flex-1 text-sm">
+                    <p className="flex flex-wrap items-center gap-2 font-semibold">
+                      Oppgave {n} <StatusEtikett status={t.status} />
+                      {t.sekunder !== undefined && <span className="font-normal text-dempet">{varighet(t.sekunder)}</span>}
+                    </p>
+                    <p className="text-dempet">{OPPGAVER[n]}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="knapp-primar min-h-10 py-2 text-sm"
+                    disabled={!kanStarte}
+                    onClick={() => start(n)}
+                    aria-describedby={kanStarte ? undefined : `hvorfor-${n}`}
+                  >
+                    Start oppgave {n}
+                  </button>
+                  {!kanStarte && (
+                    <span id={`hvorfor-${n}`} className="sr-only">
+                      {t.status === 'pagar' ? 'Oppgaven pågår.' : t.status === 'ikke_startet' ? 'En annen oppgave pågår.' : 'Oppgaven er avsluttet for denne testpersonen. Start ny testperson for å teste igjen.'}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {testperson && (testperson.oppgaver[1].status === 'fullfort' || testperson.oppgaver[1].status === 'avbrutt' || testperson.oppgaver[2].status === 'fullfort' || testperson.oppgaver[2].status === 'avbrutt') && (
+          <p className="text-xs text-dempet">En avsluttet oppgave kan ikke startes på nytt for samme testperson. Bruk «Start ny testperson».</p>
+        )}
+
+        <div className="flex flex-col gap-2 border-t border-linje pt-3 sm:flex-row sm:items-end">
+          <fieldset>
+            <legend className="mb-1 text-sm font-semibold">Variant for neste testperson</legend>
+            <div className="flex gap-3">
+              {(['a', 'b'] as const).map((v) => (
+                <label key={v} className="flex min-h-11 items-center gap-2 text-sm">
+                  <input type="radio" name="ny-variant" value={v} checked={nyVariant === v} onChange={() => setNyVariant(v)} className="size-5 accent-aksent" />
+                  {v === 'a' ? 'A («Trengs for å fungere»)' : 'B («Ofte kjøpt sammen»)'}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <button
+            type="button"
+            className="knapp-sekundar sm:ml-auto"
+            disabled={aktivOppgave !== null}
+            onClick={() => {
+              nyTestperson(nyVariant)
+              nullstillApp()
+              setOkter(hentOkter())
+              setNyVariant(nyVariant === 'a' ? 'b' : 'a')
+            }}
+          >
+            Start ny testperson
+          </button>
         </div>
-        <p className="mt-2 text-xs text-dempet">Variant A: «Trengs for å fungere». Variant B: «Ofte kjøpt sammen» over det samme tilbehøret.</p>
       </section>
 
       <div className="flex flex-wrap gap-2">
-        <button type="button" className="knapp-primar" disabled={!okter.length} onClick={() => lastNed(tilCsv(okter), `testlogg-passer-min-bil-${new Date().toISOString().slice(0, 10)}.csv`)}>
+        <button type="button" className="knapp-primar" disabled={!rader.length} onClick={() => lastNed(tilCsv(okter), `testlogg-passer-min-bil-${new Date().toISOString().slice(0, 10)}.csv`)}>
           Eksporter CSV
         </button>
         <button
@@ -89,6 +170,7 @@ export function Testlogg() {
             if (window.confirm('Slette hele testloggen i denne nettleseren?')) {
               slettLogg()
               setOkter([])
+              oppdater()
             }
           }}
         >
@@ -96,66 +178,62 @@ export function Testlogg() {
         </button>
       </div>
 
-      {okter.length === 0 ? (
-        <p>Ingen økter logget ennå.</p>
+      {rader.length === 0 ? (
+        <p>Ingen oppgaver logget ennå.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <caption className="sr-only">Testpersoner</caption>
+            <caption className="sr-only">Status per testperson og oppgave</caption>
             <thead className="border-b-2 border-tekst">
               <tr>
-                <th scope="col" className="py-2 pr-2">ID</th>
+                <th scope="col" className="py-2 pr-2">Testperson</th>
                 <th scope="col" className="pr-2">Oppgave</th>
                 <th scope="col" className="pr-2">Variant</th>
+                <th scope="col" className="pr-2">Status</th>
                 <th scope="col" className="pr-2">Tid</th>
-                <th scope="col" className="pr-2">Slutt</th>
-                <th scope="col" className="pr-2">Hoppet over</th>
-                <th scope="col" className="pr-2">Fagperson</th>
-                <th scope="col" className="pr-2">Komplett ordre</th>
+                <th scope="col" className="pr-2">Stoppet ved</th>
                 <th scope="col">Hendelser</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-linje">
-              {okter.map((o) => (
-                <Fragment key={o.uuid}>
-                  <tr>
-                    <th scope="row" className="py-2 pr-2 font-bold">{o.id}{!o.test && <span className="block text-xs font-normal text-dempet">uten testmodus</span>}</th>
-                    <td className="pr-2">{o.oppgave ?? '–'}</td>
-                    <td className="pr-2">{o.variant.toUpperCase()}</td>
-                    <td className="pr-2">{varighet(sekunderPaOppgave(o))}</td>
-                    <td className="pr-2">{o.slutt ? (o.slutt.type === 'ferdig' ? 'Ferdig' : 'Ga opp') : '–'}</td>
-                    <td className="pr-2">{hoppetOver(o) ? 'Ja' : 'Nei'}</td>
-                    <td className="pr-2">{har(o, 'fagperson_apnet') ? 'Ja' : 'Nei'}</td>
-                    <td className="pr-2">{komplettOrdre(o) ? 'Ja' : har(o, 'bestilt') ? 'Nei' : '–'}</td>
-                    <td>
-                      <button type="button" aria-expanded={apen === o.id} className="knapp-lenke min-h-9" onClick={() => setApen(apen === o.id ? null : o.id)}>
-                        {o.hendelser.length} hendelser
-                      </button>
-                    </td>
-                  </tr>
-                  {apen === o.id && (
+              {rader.map((r) => {
+                const nokkel = `${r.okt.uuid}-${r.oppgave ?? 0}`
+                return (
+                  <Fragment key={nokkel}>
                     <tr>
-                      <td colSpan={9} className="bg-flate p-3">
-                        <ol className="space-y-0.5">
-                          {o.hendelser.map((h, i) => (
-                            <li key={i}>
-                              <span className="font-mono">{tid(h.tid)}</span> {HENDELSE_NAVN[h.navn] ?? h.navn}
-                              {h.detalj && <span className="text-dempet"> ({h.detalj})</span>}
-                            </li>
-                          ))}
-                        </ol>
-                        {o.tilbakemelding && (
-                          <p className="mt-2">
-                            <strong>Tilbakemelding:</strong> trygghet {o.tilbakemelding.trygghet ?? '–'}/5 · unødvendig: {o.tilbakemelding.unodvendig ?? '–'}
-                            {o.tilbakemelding.unodvendigHva && ` (${o.tilbakemelding.unodvendigHva})`} · hjelp/mersalg {o.tilbakemelding.hjelpEllerMersalg ?? '–'}/5
-                            {o.tilbakemelding.fritekst && ` · «${o.tilbakemelding.fritekst}»`}
-                          </p>
-                        )}
+                      <th scope="row" className="py-2 pr-2 font-bold">
+                        {r.testperson}
+                        {!r.okt.test && <span className="block text-xs font-normal text-dempet">uten testmodus</span>}
+                      </th>
+                      <td className="pr-2">{r.oppgave ?? '–'}</td>
+                      <td className="pr-2">{r.variant.toUpperCase()}</td>
+                      <td className="pr-2">{r.oppgave ? <StatusEtikett status={r.status} /> : '–'}</td>
+                      <td className="pr-2">{varighet(r.tidSekunder)}</td>
+                      <td className="pr-2">{r.stoppetVed || '–'}</td>
+                      <td>
+                        <button type="button" aria-expanded={apen === nokkel} className="knapp-lenke min-h-9" onClick={() => setApen(apen === nokkel ? null : nokkel)}>
+                          {r.hendelser.length} hendelser
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </Fragment>
-              ))}
+                    {apen === nokkel && (
+                      <tr>
+                        <td colSpan={7} className="bg-flate p-3">
+                          <ol className="space-y-0.5">
+                            {r.hendelser.map((h, i) => (
+                              <li key={i}>
+                                <span className="font-mono">{tid(h.tid)}</span> {HENDELSE_NAVN[h.navn] ?? h.navn}
+                                {h.detalj && <span className="text-dempet"> ({h.detalj})</span>}
+                              </li>
+                            ))}
+                          </ol>
+                          {r.svar && <p className="mt-2"><strong>Svar:</strong> {r.svar}</p>}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -185,7 +263,49 @@ function Skala({ id, legend, venstre, hoyre, verdi, sett }: { id: string; legend
   )
 }
 
+/** Ekstra spørsmål etter «Gi opp» */
+function AvbruddSporsmal({ vedSvar }: { vedSvar: (arsak: AvbruddArsak, fritekst: string) => void }) {
+  const [arsak, setArsak] = useState<AvbruddArsak | null>(null)
+  const [fritekst, setFritekst] = useState('')
+  return (
+    <form
+      className="mx-auto max-w-xl space-y-5"
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (arsak) vedSvar(arsak, fritekst)
+      }}
+    >
+      <fieldset>
+        <legend className="h1 mb-1">Hvor stoppet det opp?</legend>
+        <p className="mb-3 text-dempet">Det er helt i orden å gi opp. Svaret hjelper oss å forbedre løsningen.</p>
+        <div className="grid gap-2">
+          {AVBRUDD_ARSAKER.map((a) => (
+            <label key={a.verdi} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border-2 p-3 ${arsak === a.verdi ? 'border-aksent bg-aksent-lys' : 'border-linje'}`}>
+              <input type="radio" name="arsak" value={a.verdi} checked={arsak === a.verdi} onChange={() => setArsak(a.verdi)} className="size-5 accent-aksent" />
+              <span className="font-semibold">{a.tekst}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <div>
+        <label htmlFor="arsak-fritekst" className="mb-1 block font-semibold">
+          {arsak === 'annet' ? 'Hva skjedde?' : 'Fortell gjerne mer (valgfritt)'}
+        </label>
+        <textarea id="arsak-fritekst" rows={3} className="felt" value={fritekst} onChange={(e) => setFritekst(e.target.value)} aria-describedby="arsak-hjelp" />
+        <p id="arsak-hjelp" className="mt-1 text-xs text-dempet">Ikke skriv navn eller kontaktinformasjon.</p>
+      </div>
+      <button type="submit" className="knapp-primar w-full" disabled={!arsak}>
+        Neste
+      </button>
+    </form>
+  )
+}
+
 export function TilbakemeldingSide() {
+  const { testperson, sisteAvsluttet, oppdater } = useTest()
+  const oppgave = sisteAvsluttet
+  const tilstand = oppgave && testperson ? testperson.oppgaver[oppgave] : null
+  const avbrutt = tilstand?.status === 'avbrutt'
   const [t, setT] = useState<Tilbakemelding>({ trygghet: null, unodvendig: null, unodvendigHva: '', hjelpEllerMersalg: null, fritekst: '' })
   const [sendt, setSendt] = useState(false)
 
@@ -198,17 +318,30 @@ export function TilbakemeldingSide() {
     )
   }
 
+  // Gi opp: først «Hvor stoppet det opp?»
+  if (avbrutt && oppgave && !tilstand?.arsak) {
+    return (
+      <AvbruddSporsmal
+        vedSvar={(arsak, fritekst) => {
+          lagreAvbruddArsak(oppgave, arsak, fritekst)
+          oppdater()
+        }}
+      />
+    )
+  }
+
   return (
     <form
       className="mx-auto max-w-xl space-y-6"
       onSubmit={(e) => {
         e.preventDefault()
-        lagreTilbakemelding(t)
+        lagreTilbakemelding(oppgave, t)
+        oppdater()
         setSendt(true)
       }}
     >
       <div>
-        <h1 className="h1">Hvordan gikk det?</h1>
+        <h1 className="h1">{avbrutt ? 'Takk for at du prøvde' : 'Takk, oppgaven er fullført'}</h1>
         <p className="mt-1 text-dempet">Fire korte spørsmål. Anonymt: vi spør ikke om navn eller e-post.</p>
       </div>
       <Skala id="trygghet" legend="Hvor trygg var du på at pakken passet bilen?" venstre="ikke trygg" hoyre="helt trygg" verdi={t.trygghet} sett={(n) => setT({ ...t, trygghet: n })} />
@@ -260,9 +393,15 @@ export function Innsikt() {
   const varianter = (['a', 'b'] as const).map((v) => {
     const os = okter.filter((o) => o.variant === v)
     const bestilt = os.filter((o) => har(o, 'bestilt')).length
-    const tb = os.map((o) => o.tilbakemelding?.hjelpEllerMersalg).filter((x): x is number => typeof x === 'number')
+    const tb = os
+      .flatMap((o) => [o.oppgaver[1].tilbakemelding?.hjelpEllerMersalg, o.oppgaver[2].tilbakemelding?.hjelpEllerMersalg])
+      .filter((x): x is number => typeof x === 'number')
     return { v, n: os.length, bestilt, hjelp: tb.length ? (tb.reduce((a, b) => a + b, 0) / tb.length).toFixed(1) : '–' }
   })
+  const arsaker = AVBRUDD_ARSAKER.map((a) => ({
+    ...a,
+    antall: okter.flatMap((o) => [o.oppgaver[1], o.oppgaver[2]]).filter((t) => t.arsak === a.verdi).length,
+  })).filter((a) => a.antall)
   const maks = Math.max(1, ...FUNNEL.map((f) => okter.filter((o) => har(o, f)).length))
   const spNavn = (id: string) => fagpersonSvar.sporsmal.find((s) => s.id === id)?.sporsmal ?? (id === 'ring_meg' ? 'Ring meg tilbake' : id)
 
@@ -281,7 +420,7 @@ export function Innsikt() {
           ['Komplette ordrer', `${okter.filter(komplettOrdre).length} av ${okter.filter((o) => har(o, 'bestilt')).length}`],
           ['Brukte fagperson', andel(okter.filter((o) => har(o, 'fagperson_apnet')).length)],
           ['Hoppet over veileder', andel(okter.filter(hoppetOver).length)],
-          ['Ga opp', andel(okter.filter((o) => o.slutt?.type === 'gitt_opp').length)],
+          ['Ga opp (avbrutt)', andel(okter.filter(harAvbrutt).length)],
         ].map(([t, v]) => (
           <div key={t} className="kort">
             <dt className="text-sm text-dempet">{t}</dt>
@@ -331,6 +470,15 @@ export function Innsikt() {
           ) : <p className="text-sm">Ingen data ennå.</p>}
         </section>
       </div>
+
+      <section aria-labelledby="arsak">
+        <h2 id="arsak" className="h2 mb-2">Hvor stoppet det opp? (svar ved «Gi opp»)</h2>
+        {arsaker.length ? (
+          <ul className="space-y-1 text-sm">
+            {arsaker.map((a) => <li key={a.verdi}>{a.tekst}: <strong>{a.antall}</strong></li>)}
+          </ul>
+        ) : <p className="text-sm">Ingen avbrudd ennå.</p>}
+      </section>
 
       <section aria-labelledby="var">
         <h2 id="var" className="h2 mb-2">Variant A («Trengs for å fungere») mot B («Ofte kjøpt sammen»)</h2>

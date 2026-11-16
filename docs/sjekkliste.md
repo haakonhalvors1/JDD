@@ -78,7 +78,7 @@ Slik ble det verifisert:
 | Logging av alle funnel-hendelser med tidsstempel | ✔ | Auto (P), Auto (V) |
 | Testlogg per testperson + CSV | ✔ | Auto (V) (CSV-format), skjerm 17 |
 | Tilbakemeldingsside uten navn/e-post | ✔ | Skjerm 16 |
-| Kjørende på GitHub Pages | ✘ | Workflow er klar, men Pages må slås på i repoinnstillingene (se README) |
+| Kjørende på GitHub Pages | ✔ | Publisert via GitHub Actions |
 
 ## Antakelser som må avklares med JDD
 
@@ -92,3 +92,22 @@ Slik ble det verifisert:
 8. **Regler for ekstralys.** Teksten om E-godkjenning, kobling til fjernlys og grenser for antall og referansetall må sjekkes mot Statens vegvesen.
 9. **Partnerverksted for montering** (vist som «kommer»).
 10. **Leveringstid og frakt** (2–4 virkedager, frakt inkludert) er eksempler.
+
+## Feilretting 16.11.2026
+
+Verifisert med `npm test` (45 tester) og `npm run test:e2e` (`scripts/e2e-feilretting.mjs`, mobil 390 px, 38/38 OK). `npm run screenshots` er fortsatt 62/62 OK.
+
+| AK | Status | Verifisert |
+| --- | --- | --- |
+| 1.8 Populære bilmodeller generert fra kjoretoy.json, RAV4 2022 først | ✔ | Vitest + e2e |
+| 1.9 RAV4 2022: tre felt utfylt og bekreftelse med Bekreftet uten flere klikk | ✔ | Vitest + e2e, skjerm mobil-29 |
+| 1.10 Bil uten godkjent regel: Ukjent + «Har bilen LED-frontlys?» | ✔ | Vitest + e2e, skjerm mobil-30 |
+| 1.11 Avhengige lister og nullstilling ved bytte av merke/modell | ✔ | Vitest + e2e |
+| 1.12 `populaer_modell_valgt` + `bil_bekreftet` logges | ✔ | e2e |
+| 1.13 Status vises før svar, bekreftelsen synlig på mobil | ✔ | e2e + manuell |
+| T1 Testlinje vises når oppgave startes fra #/testlogg | ✔ | e2e, skjerm mobil-31 |
+| T2 Ferdig → ingen testlinje, «fullført», også etter oppdatering | ✔ | Vitest + e2e |
+| T3 Gi opp → «Hvor stoppet det opp?», ingen testlinje, «avbrutt» | ✔ | Vitest + e2e, skjerm mobil-32/33 |
+| T4 Ingen testlinje etter avslutning, selv med `?test=1`. Parameteren fjernes | ✔ | e2e |
+| T5 Avsluttet oppgave kan ikke startes på nytt. «Start ny testperson» | ✔ | Vitest + e2e, skjerm mobil-34 |
+| T6 Ulike hendelser, skjermer og status i CSV | ✔ | Vitest + e2e (nedlastet CSV) |
