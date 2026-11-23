@@ -29,7 +29,7 @@ export function KurvSide() {
       <div className="mx-auto max-w-2xl">
         <h1 className="h1">Handlekurv</h1>
         <p className="mt-2">Kurven er tom.</p>
-        <Link to="/passer" className="knapp-primar mt-4">Finn ekstralys som passer bilen din</Link>
+        <Link to="/passer" className="knapp-primar mt-4">Finn ekstrautstyr til bilen din</Link>
       </div>
     )
   }
@@ -102,7 +102,7 @@ export function KasseSide() {
       <div className="mx-auto max-w-2xl">
         <h1 className="h1">Kasse</h1>
         <p className="mt-2">Kurven er tom.</p>
-        <Link to="/passer" className="knapp-primar mt-4">Finn ekstralys</Link>
+        <Link to="/passer" className="knapp-primar mt-4">Finn ekstrautstyr til bilen din</Link>
       </div>
     )
   }
