@@ -11,7 +11,8 @@
     "test": "vitest run",
     "screenshots": "node scripts/screenshots.mjs",
     "test:e2e": "node scripts/e2e-feilretting.mjs",
-    "demo": "node scripts/demo-video.mjs"
+    "demo": "node scripts/demo-video.mjs",
+    "demo:pc": "node scripts/demo-video.mjs --pc"
   },
   "dependencies": {
     "react": "^19.1.0",

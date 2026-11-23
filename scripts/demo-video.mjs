@@ -1,19 +1,25 @@
 // Tar opp en demovideo av prototypen (mobil 390 px) med synlig peker og rolig tempo, for VoiceOver i etterkant.
 // Skriver også et manus med tidskoder per kapittel.
-// Bruk: npm run build && npx vite preview --port 4173 &  →  node scripts/demo-video.mjs
-// Resultat: docs/demo/passer-min-bil-demo.mp4 og docs/demo/manus.md
+// Bruk: npm run build && npx vite preview --port 4173 &  →  node scripts/demo-video.mjs [--pc]
+// Resultat (mobil): docs/demo/passer-min-bil-demo.mp4 og docs/demo/manus.md
+// Resultat (--pc, 1920×1080): docs/demo/passer-min-bil-demo-pc.mp4 og docs/demo/manus-pc.md
 import { chromium } from 'playwright'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:4173/JDD/'
 const UT = 'docs/demo'
-const RAA = `${UT}/raa`
+const PC = process.argv.includes('--pc')
+// Mobil: 390×844 skalert ×2. PC: 1280×720 (desktop-layout) skalert til 1920×1080.
+const W = PC ? 1280 : 390
+const H = PC ? 720 : 844
+const UT_W = PC ? 1920 : W * 2
+const UT_H = PC ? 1080 : H * 2
+const SUFFIKS = PC ? '-pc' : ''
+const RAA = `${UT}/raa${SUFFIKS}`
 rmSync(RAA, { recursive: true, force: true })
 mkdirSync(RAA, { recursive: true })
 
-const W = 390
-const H = 844
 
 const browser = await chromium.launch()
 const ctx = await browser.newContext({
@@ -313,13 +319,13 @@ await browser.close()
 // ---------- Konverter til MP4 og skriv manus ----------
 const webm = readdirSync(RAA).find((f) => f.endsWith('.webm'))
 renameSync(`${RAA}/${webm}`, `${RAA}/demo.webm`)
-execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', `${RAA}/demo.webm`, '-vf', `scale=${W * 2}:${H * 2}:flags=lanczos`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '20',
-  '-pix_fmt', 'yuv420p', '-r', '30', '-movflags', '+faststart', `${UT}/passer-min-bil-demo.mp4`])
+execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', `${RAA}/demo.webm`, '-vf', `scale=${UT_W}:${UT_H}:flags=lanczos`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '20',
+  '-pix_fmt', 'yuv420p', '-r', '30', '-movflags', '+faststart', `${UT}/passer-min-bil-demo${SUFFIKS}.mp4`])
 rmSync(RAA, { recursive: true, force: true })
 
 const manus = `# Manus for VoiceOver: «Passer min bil»-demo
 
-Video: \`passer-min-bil-demo.mp4\` · mobilvisning (390 px) · varighet ca. ${varighet} · ingen lyd.
+Video: \`passer-min-bil-demo${SUFFIKS}.mp4\` · ${PC ? 'PC-format 1920 × 1080 (desktop-layout)' : 'mobilvisning (390 px)'} · varighet ca. ${varighet} · ingen lyd.
 Tidskodene viser når hvert kapittel starter. «Forslag til tale» kan brukes som utgangspunkt. Tilpass gjerne.
 
 | Tid | Kapittel | Det som vises | Forslag til tale |
@@ -328,5 +334,5 @@ ${kapitler.map((k) => `| ${k.tid} | ${k.tittel} | ${k.viser} | ${k.forslag} |`).
 
 Prototype med eksempeldata, fiktive varenavn og eksempelpriser. Ingen ekte bestilling.
 `
-writeFileSync(`${UT}/manus.md`, manus)
-console.log(`\nFerdig: ${UT}/passer-min-bil-demo.mp4 (${varighet}) og ${UT}/manus.md`)
+writeFileSync(`${UT}/manus${SUFFIKS}.md`, manus)
+console.log(`\nFerdig: ${UT}/passer-min-bil-demo${SUFFIKS}.mp4 (${varighet}) og ${UT}/manus${SUFFIKS}.md`)
