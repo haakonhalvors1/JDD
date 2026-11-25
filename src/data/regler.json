@@ -33,12 +33,12 @@
   "utledning": [
     {
       "id": "U-001", "ledSvar": "ja", "krever": "rele", "releId": "REL-UNI",
-      "beskrivelse": "Kunden svarer at bilen har LED-frontlys. LED-frontlys henger normalt sammen med Canbus, så et vanlig kabelsett fungerer ikke. Vi vet ikke hvilken Canbus-type bilen har, og velger derfor et universalrelé som støtter både CAN og CAN FD.",
+      "beskrivelse": "Du har svart at bilen har LED-frontlys. LED-frontlys henger normalt sammen med Canbus, og da fungerer ikke et vanlig kabelsett. Vi vet ikke hvilken Canbus-type bilen din har, så vi har valgt et universalrelé som støtter både CAN og CAN FD.",
       "kilde": "Byggemodulen på dagens nettbutikk: «Har bilen LED-lys og Canbus, trengs et relé» (service safari 12.10.2026)"
     },
     {
       "id": "U-002", "ledSvar": "nei", "krever": "kabelsett",
-      "beskrivelse": "Kunden svarer at bilen har halogen-frontlys. Da kan ekstralyset kobles til fjernlyset med et standard kabelsett.",
+      "beskrivelse": "Du har svart at bilen har halogen-frontlys. Da kan du koble ekstralyset til fjernlyset med et standard kabelsett.",
       "kilde": "Byggemodulen på dagens nettbutikk (service safari 12.10.2026)"
     }
   ]
